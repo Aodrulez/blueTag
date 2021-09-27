@@ -52,7 +52,7 @@ void splashScreen(void)
     printf("\n%s",banner);
     printf("\n");
     printf("\n          +-------------------------------------------------------+");
-    printf("\n          | (c) Aodrulez             Email: mr.atulalex@gmail.com |");
+    printf("\n          | @Aodrulez         https://github.com/Aodrulez/blueTag |");
     printf("\n          +-------------------------------------------------------+\n\n");   
 }
 
