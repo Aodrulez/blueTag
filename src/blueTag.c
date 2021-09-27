@@ -51,6 +51,7 @@ void splashScreen(void)
 {
     printf("\n%s",banner);
     printf("\n");
+    printf("\n          [   JTAGulator alternative based on Raspberry Pi Pico   ]");
     printf("\n          +-------------------------------------------------------+");
     printf("\n          | @Aodrulez         https://github.com/Aodrulez/blueTag |");
     printf("\n          +-------------------------------------------------------+\n\n");   
@@ -68,9 +69,8 @@ void showMenu(void)
     printf("     \"v\" = Show current version\n");
     printf("     \"p\" = Toggle pulsing of pins (Default:ON)\n");
     printf("     \"j\" = Perform JTAG pinout scan\n");
-    printf("     \"s\" = Perform SWD pinout scan\n");
-    printf(" [ Note: Disable 'local echo' in your terminal emulator program ]\n");
-    printf("\n");
+    printf("     \"s\" = Perform SWD pinout scan\n\n");
+    printf(" [ Note: Disable 'local echo' in your terminal emulator program ]\n\n");
 }
 
 int getChannels(void)
