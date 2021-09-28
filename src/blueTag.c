@@ -17,7 +17,7 @@ char *version="1.0";
 #define  MAX_IR_LEN         32                             // Maximum length of instruction register
 #define  MAX_IR_CHAIN_LEN   MAX_DEVICES_LEN * MAX_IR_LEN   // Maximum total length of JTAG chain w/ IR selected
 #define  MAX_DR_LEN         4096                           // Maximum length of data register
-
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof(*array))
 
 
 const uint onboardLED = 25;
@@ -43,8 +43,11 @@ uint xTMS;
 uint xTRST;
 
 
-// MFG details for JTAG based on jep106 (old - known issue)
-char * mfg[9][126]={{"AMD","AMI","Fairchild","Fujitsu","GTE","Harris","Hitachi","Inmos","Intel","I.T.T.","Intersil","Monolithic Memories","Mostek","Freescale (Motorola)","National","NEC","RCA","Raytheon","Conexant (Rockwell)","Seeq","NXP (Philips)","Synertek","Texas Instruments","Toshiba","Xicor","Zilog","Eurotechnique","Mitsubishi","Lucent (AT&T)","Exel","Atmel","STMicroelectronics","Lattice Semi.","NCR","Wafer Scale Integration","IBM","Tristar","Visic","Intl. CMOS Technology","SSSI","MicrochipTechnology","Ricoh Ltd.","VLSI","Micron Technology","SK Hynix","OKI Semiconductor","ACTEL","Sharp","Catalyst","Panasonic","IDT","Cypress","DEC","LSI Logic","Zarlink (Plessey)","UTMC","Thinking Machine","Thomson CSF","Integrated CMOS (Vertex)","Honeywell","Tektronix","Oracle Corporation","Silicon Storage Technology","ProMos/Mosel Vitelic","Infineon (Siemens)","Macronix","Xerox","Plus Logic","SanDisk Corporation","Elan Circuit Tech.","European Silicon Str.","Apple Computer","Xilinx","Compaq","Protocol Engines","SCI","Seiko Instruments","Samsung","I3 Design System","Klic","Crosspoint Solutions","Alliance Semiconductor","Tandem","Hewlett-Packard","Integrated Silicon Solutions","Brooktree","New Media","MHS Electronic","Performance Semi.","Winbond Electronic","Kawasaki Steel","Bright Micro","TECMAR","Exar","PCMCIA","LG Semi (Goldstar)","Northern Telecom","Sanyo","Array Microsystems","Crystal Semiconductor","Analog Devices","PMC-Sierra","Asparix","Convex Computer","Quality Semiconductor","Nimbus Technology","Transwitch","Micronas (ITT Intermetall)","Cannon","Altera","NEXCOM","Qualcomm","Sony","Cray Research","AMS(Austria Micro)","Vitesse","Aster Electronics","Bay Networks (Synoptic)","Zentrum/ZMD","TRW","Thesys","Solbourne Computer","Allied-Signal","Dialog Semiconductor","Media Vision","Numonyx Corporation",},{"Cirrus Logic","National Instruments","ILC Data Device","Alcatel Mietec","Micro Linear","Univ. of NC","JTAG Technologies","BAE Systems (Loral)","Nchip","Galileo Tech","Bestlink Systems","Graychip","GENNUM","VideoLogic","Robert Bosch","Chip Express","DATARAM","United Microelectronics Corp.","TCSI","Smart Modular","Hughes Aircraft","Lanstar Semiconductor","Qlogic","Kingston","Music Semi","Ericsson Components","SpaSE","Eon Silicon Devices","Integrated Silicon Solution (ISSI)","DoD","Integ. Memories Tech.","Corollary Inc.","Dallas Semiconductor","Omnivision","EIV(Switzerland)","Novatel Wireless","Zarlink (Mitel)","Clearpoint","Cabletron","STEC (Silicon Tech)","Vanguard","Hagiwara Sys-Com","Vantis","Celestica","Century","Hal Computers","Rohm Company Ltd.","Juniper Networks","Libit Signal Processing","Mushkin Enhanced Memory","Tundra Semiconductor","Adaptec Inc.","LightSpeed Semi.","ZSP Corp.","AMIC Technology","Adobe Systems","Dynachip","PNY Technologies, Inc.","Newport Digital","MMC Networks","T Square","Seiko Epson","Broadcom","Viking Components","V3 Semiconductor","Flextronics (Orbit Semiconductor)","Suwa Electronics","Transmeta","Micron CMS","American Computer & Digital","Enhance 3000 Inc.","Tower Semiconductor","CPU Design","Price Point","Maxim Integrated Product","Tellabs","Centaur Technology","Unigen Corporation","Transcend Information","Memory Card Technology","CKD Corporation Ltd.","Capital Instruments, Inc.","Aica Kogyo, Ltd.","Linvex Technology","MSC Vertriebs GmbH","AKM Company, Ltd.","Dynamem, Inc.","NERA ASA","GSI Technology","Dane-Elec (C Memory)","Acorn Computers","Lara Technology","Oak Technology, Inc.","Itec Memory","Tanisys Technology","Truevision","Wintec Industries","Super PC Memory","MGV Memory","Galvantech","Gadzoox Networks","Multi Dimensional Cons.","GateField","Integrated Memory System","Triscend","XaQti","Goldenram","Clear Logic","Cimaron Communications","Nippon Steel Semi. Corp.","Advantage Memory","AMCC","LeCroy","Yamaha Corporation","Digital Microwave","NetLogic Microsystems","MIMOS Semiconductor","Advanced Fibre","BF Goodrich Data.","Epigram","Acbel Polytech Inc.","Apacer Technology","Admor Memory","FOXCONN","Quadratics Superconductor","3COM",},{"Solectron","Optosys Technologies","Buffalo (Formerly Melco)","TriMedia Technologies","Cyan Technologies","Global Locate","Optillion","Terago Communications","Ikanos Communications","Princeton Technology","Nanya Technology","Elite Flash Storage","Mysticom","LightSand Communications","ATI Technologies","Agere Systems","NeoMagic","AuroraNetics","Golden Empire","Mushkin","Tioga Technologies","Netlist","TeraLogic","Cicada Semiconductor","Centon Electronics","Tyco Electronics","Magis Works","Zettacom","Cogency Semiconductor","Chipcon AS","Aspex Technology","F5 Networks","Programmable Silicon Solutions","ChipWrights","Acorn Networks","Quicklogic","Kingmax Semiconductor","BOPS","Flasys","BitBlitz Communications","eMemory Technology","Procket Networks","Purple Ray","Trebia Networks","Delta Electronics","Onex Communications","Ample Communications","Memory Experts Intl","Astute Networks","Azanda Network Devices","Dibcom","Tekmos","API NetWorks","Bay Microsystems","Firecron Ltd","Resonext Communications","Tachys Technologies","Equator Technology","Concept Computer","SILCOM","3Dlabs","c’t Magazine","Sanera Systems","Silicon Packets","Viasystems Group","Simtek","Semicon Devices Singapore","Satron Handelsges","Improv Systems","INDUSYS GmbH","Corrent","Infrant Technologies","Ritek Corp","empowerTel Networks","Hypertec","Cavium Networks","PLX Technology","Massana Design","Intrinsity","Valence Semiconductor","Terawave Communications","IceFyre Semiconductor","Primarion","Picochip Designs Ltd","Silverback Systems","Jade Star Technologies","Pijnenburg Securealink","takeMS - Ultron AG","Cambridge Silicon Radio","Swissbit","Nazomi Communications","eWave System","Rockwell Collins","Picocel Co. Ltd. (Paion)","Alphamosaic Ltd","Sandburst","SiCon Video","NanoAmp Solutions","Ericsson Technology","PrairieComm","Mitac International","Layer N Networks","MtekVision (Atsana)","Allegro Networks","Marvell Semiconductors","Netergy Microelectronic","NVIDIA","Internet Machines","Memorysolution GmbH","Litchfield Communication","Accton Technology","Teradiant Networks","Scaleo Chip","Cortina Systems","RAM Components","Raqia Networks","ClearSpeed","Matsushita Battery","Xelerated","SimpleTech","Utron Technology","Astec International","AVM gmbH","Redux Communications","Dot Hill Systems","TeraChip",},{"T-RAM Incorporated","Innovics Wireless","Teknovus","KeyEye Communications","Runcom Technologies","RedSwitch","Dotcast","Silicon Mountain Memory","Signia Technologies","Pixim","Galazar Networks","White Electronic Designs","Patriot Scientific","Neoaxiom Corporation","3Y Power Technology","Scaleo Chip","Potentia Power Systems","C-guys Incorporated","Digital Communications Technology","Silicon-Based Technology","Fulcrum Microsystems","Positivo Informatica Ltd","XIOtech Corporation","PortalPlayer","Zhiying Software","ParkerVision, Inc.","Phonex Broadband","Skyworks Solutions","Entropic Communications","I’M Intelligent Memory Ltd.","Zensys A/S","Legend Silicon Corp.","Sci-worx GmbH","SMSC (Standard Microsystems)","Renesas Electronics","Raza Microelectronics","Phyworks","MediaTek","Non-cents Productions","US Modular","Wintegra Ltd.","Mathstar","StarCore","Oplus Technologies","Mindspeed","Just Young Computer","Radia Communications","OCZ","Emuzed","LOGIC Devices","Inphi Corporation","Quake Technologies","Vixel","SolusTek","Kongsberg Maritime","Faraday Technology","Altium Ltd.","Insyte","ARM Ltd.","DigiVision","Vativ Technologies","Endicott Interconnect Technologies","Pericom","Bandspeed","LeWiz Communications","CPU Technology","Ramaxel Technology","DSP Group","Axis Communications","Legacy Electronics","Chrontel","Powerchip Semiconductor","MobilEye Technologies","Excel Semiconductor","A-DATA Technology","VirtualDigm","G Skill Intl","Quanta Computer","Yield Microelectronics","Afa Technologies","KINGBOX Technology Co. Ltd.","Ceva","iStor Networks","Advance Modules","Microsoft","Open-Silicon","Goal Semiconductor","ARC International","Simmtec","Metanoia","Key Stream","Lowrance Electronics","Adimos","SiGe Semiconductor","Fodus Communications","Credence Systems Corp.","Genesis Microchip Inc.","Vihana, Inc.","WIS Technologies","GateChange Technologies","High Density Devices AS","Synopsys","Gigaram","Enigma Semiconductor Inc.","Century Micro Inc.","Icera Semiconductor","Mediaworks Integrated Systems","O’Neil Product Development","Supreme Top Technology Ltd.","MicroDisplay Corporation","Team Group Inc.","Sinett Corporation","Toshiba Corporation","Tensilica","SiRF Technology","Bacoc Inc.","SMaL Camera Technologies","Thomson SC","Airgo Networks","Wisair Ltd.","SigmaTel","Arkados","Compete IT gmbH Co. KG","Eudar Technology Inc.","Focus Enhancements","Xyratex",},{"Specular Networks","Patriot Memory (PDP Systems)","U-Chip Technology Corp.","Silicon Optix","Greenfield Networks","CompuRAM GmbH","Stargen, Inc.","NetCell Corporation","Excalibrus Technologies Ltd","SCM Microsystems","Xsigo Systems, Inc.","CHIPS & Systems Inc","Tier 1 Multichip Solutions","CWRL Labs","Teradici","Gigaram, Inc.","g2 Microsystems","PowerFlash Semiconductor","P.A. Semi, Inc.","NovaTech Solutions, S.A.","c2 Microsystems, Inc.","Level5 Networks","COS Memory AG","Innovasic Semiconductor","02IC Co. Ltd","Tabula, Inc.","Crucial Technology","Chelsio Communications","Solarflare Communications","Xambala Inc.","EADS Astrium","Terra Semiconductor, Inc.","Imaging Works, Inc.","Astute Networks, Inc.","Tzero","Emulex","Power-One","Pulse~LINK Inc.","Hon Hai Precision Industry","White Rock Networks Inc.","Telegent Systems USA, Inc.","Atrua Technologies, Inc.","Acbel Polytech Inc.","eRide Inc.","ULi Electronics Inc.","Magnum Semiconductor Inc.","neoOne Technology, Inc.","Connex Technology, Inc.","Stream Processors, Inc.","Focus Enhancements","Telecis Wireless, Inc.","uNav Microelectronics","Tarari, Inc.","Ambric, Inc.","Newport Media, Inc.","VMTS","Enuclia Semiconductor, Inc.","Virtium Technology Inc.","Solid State System Co., Ltd.","Kian Tech LLC","Artimi","Power Quotient International","Avago Technologies","ADTechnology","Sigma Designs","SiCortex, Inc.","Ventura Technology Group","eASIC","M.H.S. SAS","Micro Star International","Rapport Inc.","Makway International","Broad Reach Engineering Co.","Semiconductor Mfg Intl Corp","SiConnect","FCI USA Inc.","Validity Sensors","Coney Technology Co. Ltd.","Spans Logic","Neterion Inc.","Qimonda","New Japan Radio Co. Ltd.","Velogix","Montalvo Systems","iVivity Inc.","Walton Chaintech","AENEON","Lorom Industrial Co. Ltd.","Radiospire Networks","Sensio Technologies, Inc.","Nethra Imaging","Hexon Technology Pte Ltd","CompuStocx (CSX)","Methode Electronics, Inc.","Connect One Ltd.","Opulan Technologies","Septentrio NV","Goldenmars Technology Inc.","Kreton Corporation","Cochlear Ltd.","Altair Semiconductor","NetEffect, Inc.","Spansion, Inc.","Taiwan Semiconductor Mfg","Emphany Systems Inc.","ApaceWave Technologies","Mobilygen Corporation","Tego","Cswitch Corporation","Haier (Beijing) IC Design Co.","MetaRAM","Axel Electronics Co. Ltd.","Tilera Corporation","Aquantia","Vivace Semiconductor","Redpine Signals","Octalica","InterDigital Communications","Avant Technology","Asrock, Inc.","Availink","Quartics, Inc.","Element CXI","Innovaciones Microelectronicas","VeriSilicon Microelectronics","W5 Networks",},{"MOVEKING","Mavrix Technology, Inc.","CellGuide Ltd.","Faraday Technology","Diablo Technologies, Inc.","Jennic","Octasic","Molex Incorporated","3Leaf Networks","Bright Micron Technology","Netxen","NextWave Broadband Inc.","DisplayLink","ZMOS Technology","Tec-Hill","Multigig, Inc.","Amimon","Euphonic Technologies, Inc.","BRN Phoenix","InSilica","Ember Corporation","Avexir Technologies Corporation","Echelon Corporation","Edgewater Computer Systems","XMOS Semiconductor Ltd.","GENUSION, Inc.","Memory Corp NV","SiliconBlue Technologies","Rambus Inc.","Andes Technology Corporation","Coronis Systems","Achronix Semiconductor","Siano Mobile Silicon Ltd.","Semtech Corporation","Pixelworks Inc.","Gaisler Research AB","Teranetics","Toppan Printing Co. Ltd.","Kingxcon","Silicon Integrated Systems","I-O Data Device, Inc.","NDS Americas Inc.","Solomon Systech Limited","On Demand Microelectronics","Amicus Wireless Inc.","SMARDTV SNC","Comsys Communication Ltd.","Movidia Ltd.","Javad GNSS, Inc.","Montage Technology Group","Trident Microsystems","Super Talent","Optichron, Inc.","Future Waves UK Ltd.","SiBEAM, Inc.","Inicore,Inc.","Virident Systems","M2000, Inc.","ZeroG Wireless, Inc.","Gingle Technology Co. Ltd.","Space Micro Inc.","Wilocity","Novafora, Inc.","iKoa Corporation","ASint Technology","Ramtron","Plato Networks Inc.","IPtronics AS","Infinite-Memories","Parade Technologies Inc.","Dune Networks","GigaDevice Semiconductor","Modu Ltd.","CEITEC","Northrop Grumman","XRONET Corporation","Sicon Semiconductor AB","Atla Electronics Co. Ltd.","TOPRAM Technology","Silego Technology Inc.","Kinglife","Ability Industries Ltd.","Silicon Power Computer &","Augusta Technology, Inc.","Nantronics Semiconductors","Hilscher Gesellschaft","Quixant Ltd.","Percello Ltd.","NextIO Inc.","Scanimetrics Inc.","FS-Semi Company Ltd.","Infinera Corporation","SandForce Inc.","Lexar Media","Teradyne Inc.","Memory Exchange Corp.","Suzhou Smartek Electronics","Avantium Corporation","ATP Electronics Inc.","Valens Semiconductor Ltd","Agate Logic, Inc.","Netronome","Zenverge, Inc.","N-trig Ltd","SanMax Technologies Inc.","Contour Semiconductor Inc.","TwinMOS","Silicon Systems, Inc.","V-Color Technology Inc.","Certicom Corporation","JSC ICC Milandr","PhotoFast Global Inc.","InnoDisk Corporation","Muscle Power","Energy Micro","Innofidei","CopperGate Communications","Holtek Semiconductor Inc.","Myson Century, Inc.","FIDELIX","Red Digital Cinema","Densbits Technology","Zempro","MoSys","Provigent","Triad Semiconductor, Inc.",},{"Siklu Communication Ltd.","A Force Manufacturing Ltd.","Strontium","ALi Corp (Abilis Systems)","Siglead, Inc.","Ubicom, Inc.","Unifosa Corporation","Stretch, Inc.","Lantiq Deutschland GmbH","Visipro.","EKMemory","Microelectronics Institute ZTE","u-blox AG","Carry Technology Co. Ltd.","Nokia","King Tiger Technology","Sierra Wireless","HT Micron","Albatron Technology Co. Ltd.","Leica Geosystems AG","BroadLight","AEXEA","ClariPhy Communications, Inc.","Green Plug","Design Art Networks","Mach Xtreme Technology Ltd.","ATO Solutions Co. Ltd.","Ramsta","Greenliant Systems, Ltd.","Teikon","Antec Hadron","NavCom Technology, Inc.","Shanghai Fudan Microelectronics","Calxeda, Inc.","JSC EDC Electronics","Kandit Technology Co. Ltd.","Ramos Technology","Goldenmars Technology","XeL Technology Inc.","Newzone Corporation","ShenZhen MercyPower Tech","Nanjing Yihuo Technology","Nethra Imaging Inc.","SiTel Semiconductor BV","SolidGear Corporation","Topower Computer Ind Co Ltd.","Wilocity","Profichip GmbH","Gerad Technologies","Ritek Corporation","Gomos Technology Limited","Memoright Corporation","D-Broad, Inc.","HiSilicon Technologies","Syndiant Inc..","Enverv Inc.","Cognex","Xinnova Technology Inc.","Ultron AG","Concord Idea Corporation","AIM Corporation","Lifetime Memory Products","Ramsway","Recore Systems B.V.","Haotian Jinshibo Science Tech","Being Advanced Memory","Adesto Technologies","Giantec Semiconductor, Inc.","HMD Electronics AG","Gloway International (HK)","Kingcore","Anucell Technology Holding","Accord Software & Systems Pvt. Ltd.","Active-Semi Inc.","Denso Corporation","TLSI Inc.","Qidan","Mustang","Orca Systems","Passif Semiconductor","GigaDevice Semiconductor (Beijing)","Memphis Electronic","Beckhoff Automation GmbH","Harmony Semiconductor Corp","Air Computers SRL","TMT Memory","Eorex Corporation","Xingtera","Netsol","Bestdon Technology Co. Ltd.","Baysand Inc.","Uroad Technology Co. Ltd.","Wilk Elektronik S.A.","AAI","Harman","Berg Microelectronics Inc.","ASSIA, Inc.","Visiontek Products LLC","OCMEMORY","Welink Solution Inc.","Shark Gaming","Avalanche Technology","R&D Center ELVEES OJSC","KingboMars Technology Co. Ltd.","High Bridge Solutions Industria","Transcend Technology Co. Ltd.","Everspin Technologies","Hon-Hai Precision","Smart Storage Systems","Toumaz Group","Zentel Electronics Corporation","Panram International Corporation","Silicon Space Technology","LITE-ON IT Corporation","Inuitive","HMicro","BittWare, Inc.","GLOBALFOUNDRIES","ACPI Digital Co. Ltd.","Annapurna Labs","AcSiP Technology Corporation","Idea! Electronic Systems","Gowe Technology Co. Ltd.","Hermes Testing Solutions, Inc.","Positivo BGH","Intelligence Silicon Technology",},{"3D PLUS","Diehl Aerospace","Fairchild","Mercury Systems","Sonics, Inc.","GE Intelligent Platforms GmbH & Co.","Shenzhen Jinge Information Co. Ltd.","SCWW","Silicon Motion Inc.","Anurag","King Kong","FROM30 Co. Ltd.","Gowin Semiconductor Corp","Fremont Micro Devices Ltd.","Ericsson Modems","Exelis","Satixfy Ltd.","Galaxy Microsystems Ltd.","Gloway International Co. Ltd.","Lab","Smart Energy Instruments","Approved Memory Corporation","Axell Corporation","Essencore Limited","Phytium","Xi’an SinoChip Semiconductor","Ambiq Micro","eveRAM Technology, Inc.","Infomax","Butterfly Network, Inc.","Shenzhen City Gcai Electronics","Stack Devices Corporation","ADK Media Group","TSP Global Co., Ltd.","HighX","Shenzhen Elicks Technology","ISSI/Chingis","Google, Inc.","Dasima International Development","Leahkinn Technology Limited","HIMA Paul Hildebrandt GmbH Co KG","Keysight Technologies","Techcomp International (Fastable)","Ancore Technology Corporation","Nuvoton","Korea Uhbele International Group Ltd.","Ikegami Tsushinki Co Ltd.","RelChip, Inc.","Baikal Electronics","Nemostech Inc.","Memorysolution GmbH","Silicon Integrated Systems Corporation","Xiede","Multilaser Components","Flash Chi","Jone","GCT Semiconductor Inc.","Hong Kong Zetta Device Technology","Unimemory Technology(s) Pte Ltd.","Cuso","Kuso","Uniquify Inc.","Skymedi Corporation","Core Chance Co. Ltd.","Tekism Co. Ltd.","Seagate Technology PLC","Hong Kong Gaia Group Co. Limited","Gigacom Semiconductor LLC","V2 Technologies","TLi","Neotion","Lenovo","Shenzhen Zhongteng Electronic Corp. Ltd.","Compound Photonics","in2H2 inc","Shenzhen Pango Microsystems Co. Ltd","Vasekey","Cal-Comp Industria de Semicondutores","Eyenix Co., Ltd.","Heoriady","Accelerated Memory Production Inc.","INVECAS, Inc.","AP Memory","Douqi Technology","Etron Technology, Inc.","Indie Semiconductor","Socionext Inc.","HGST","EVGA","Audience Inc.","EpicGear","Vitesse Enterprise Co.","Foxtronn International Corporation","Bretelon Inc.","Graphcore","Eoplex Inc","MaxLinear, Inc.","ETA Devices","LOKI","IMS Electronics Co., Ltd.","Dosilicon Co., Ltd.","Dolphin Integration","Shenzhen Mic Electronics Technology","Boya Microelectronics Inc.","Geniachip (Roche)","Axign","Kingred Electronic Technology Ltd.","Chao Yue Zhuo Computer Business Dept.","Guangzhou Si Nuo Electronic Technology.","Crocus Technology Inc.","Creative Chips GmbH","GE Aviation Systems LLC.","Asgard","Good Wealth Technology Ltd.","TriCor Technologies","Nova-Systems GmbH","JUHOR","Zhuhai Douke Commerce Co. Ltd.","DSL Memory","Anvo-Systems Dresden GmbH","Realtek","AltoBeam","Wave Computing","Beijing TrustNet Technology Co. Ltd.","Innovium, Inc.","Starsway Technology Limited",},{"Weltronics Co. LTD","VMware, Inc.","Hewlett Packard Enterprise","INTENSO","Puya Semiconductor","MEMORFI","MSC Technologies GmbH","Txrui","SiFive, Inc.","Spreadtrum Communications","Paragon Technology (Shenzhen) Ltd.","UMAX Technology","Shenzhen Yong Sheng Technology","SNOAMOO (Shenzhen Kai Zhuo Yue)","Daten Tecnologia LTDA","Shenzhen XinRuiYan Electronics","Eta Compute","Energous","Raspberry Pi Trading Ltd.","Shenzhen Chixingzhe Tech Co. Ltd.",},};
+// include file from openocd/src/helper
+static const char * const jep106[][126] = {
+    #include "jep106.inc"
+};
+
 
 
 void splashScreen(void)
@@ -228,6 +231,8 @@ uint32_t bitReverse(uint32_t x)
 
 
 
+
+
 void getDeviceIDs(int number)
 {
     restoreIdle();              // Reset TAP to Run-Test-Idle
@@ -265,6 +270,17 @@ void displayPinout(void)
     }
 }
 
+const char *jep106_table_manufacturer(unsigned int bank, unsigned int id)
+{
+	if (id < 1 || id > 126) {
+		return "Unknown";
+	}
+	/* index is zero based */
+	id--;
+	if (bank >= ARRAY_SIZE(jep106) || jep106[bank][id] == 0)
+		return "<unknown>";
+	return jep106[bank][id];
+}
 
 void displayDeviceDetails(void)
 {
@@ -279,9 +295,7 @@ void displayDeviceDetails(void)
 
         if (id > 1 && id <= 126 && bank <= 8) 
         {
-            //printf("%s", mfg[bank][id-1]);
-            //printf("(mfg: '"+String(mfg[bank][id-1])+"' , part: 0x"+String(part,HEX)+", ver: 0x"+String(ver,HEX)+")");
-            printf("(mfg: '%s' , part: 0x%x, ver: 0x%x)\n",mfg[bank][id-1], part, ver);
+            printf("(mfg: '%s' , part: 0x%x, ver: 0x%x)\n",jep106_table_manufacturer(bank,id), part, ver);
         }
     }
     printf("\n");
@@ -589,6 +603,218 @@ void initChannels(void)
     }
 }
 
+
+//----------------------------------SWD-----------------------------------------
+
+
+#define RESET_SEQUENCE_LENGTH 64
+#define CLOCK_HALF_CYCLE_US 5
+#define JTAG_TO_SWD 0xE79E
+
+
+#define ROW_FORMAT "CLK: %2d | IO: %2d | ACK: %ld | PART: 0x%08x\r\n"
+#define PROMPT "> "
+
+#define getAck(value) (value & 0x7)
+#define getIDCode(value) ((value >> 3))
+
+#define bitRead(value, bit) (((value) >> (bit)) & 0x01)
+#define bitSet(value, bit) ((value) |= (1UL << (bit)))
+#define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
+#define bitWrite(value, bit, bitvalue) ((bitvalue) ? bitSet(value, bit) : bitClear(value, bit))
+
+
+
+uint swclkPin;
+uint swdioPin;
+
+int getSwdChannels(void)
+{
+    char x;
+    printf("     Enter number of channels hooked up (Min 2, Max %d): ", maxChannels);
+    x = getc(stdin);
+    printf("%c\n",x);
+    x = x - 48;
+    while(x < 2 || x > maxChannels)
+    {
+        printf("     Enter a valid value: ");
+        x = getc(stdin);
+        printf("%c\n",x);
+        x = x - 48;
+    }
+    printf("     Number of channels set to: %d\n",x);
+    printf("     Note: SWD scan is slow, this might take some time. \n\n");
+    return(x);
+}
+
+void setupMasterWrite(void)
+{
+    gpio_set_dir(swdioPin, GPIO_OUT);
+}
+
+void setupMasterRead(void)
+{
+    gpio_set_dir(swdioPin, GPIO_IN);
+}
+
+void swdSetupPins(void)
+{
+   gpio_set_dir(swdioPin, GPIO_OUT);
+   gpio_set_dir(swclkPin, GPIO_OUT);
+}
+
+void swdResetPins(void)
+{
+   gpio_set_dir(swdioPin, GPIO_IN);
+   gpio_set_dir(swclkPin, GPIO_IN);
+}
+
+void swdSetPins(uint newSwdClkPin, uint newSwdioPin)
+{
+    swclkPin = newSwdClkPin;
+    swdioPin = newSwdioPin;
+}
+
+void swdPulseClock(void)
+{
+    gpio_put(swclkPin, 0);
+    sleep_ms(CLOCK_HALF_CYCLE_US);
+    gpio_put(swclkPin, 1);
+    sleep_ms(CLOCK_HALF_CYCLE_US);
+}
+
+void swdResetLine(void)
+{
+    gpio_put(swdioPin, 1);
+    for (int i=0 ; i<RESET_SEQUENCE_LENGTH ; i++)
+    {
+        swdPulseClock();
+    }
+}
+
+void swdWriteBit(bool value)
+{
+    gpio_put(swdioPin, value);
+    swdPulseClock();
+}
+
+void swdWriteBits(long value, int length)
+{
+    for (int i=0; i<length; i++)
+    {
+        swdWriteBit(bitRead(value, i));
+    }
+}
+
+void swdReadBits(long *value, int length)
+{
+    setupMasterRead();
+    for (int i=0; i<length; i++)
+    {
+        bool bitValue = gpio_get(swdioPin);
+        bitWrite(*value, i, bitValue);
+        swdPulseClock();
+    }
+    setupMasterWrite();
+}
+
+void turnaround(void)
+{
+    setupMasterRead();
+    swdPulseClock();
+}
+
+void switchJtagToSwd(void)
+{
+    swdResetLine();
+    swdWriteBits(JTAG_TO_SWD, 16);
+    swdResetLine();
+    swdWriteBits(0x00, 4);
+}
+
+void swdReadIdCode(long *buffer)
+{
+    swdWriteBits(0xA5, 8);             // readIdCode command 0b10100101
+    turnaround();
+    swdReadBits(buffer, 36);           // ack + data + parity
+    turnaround();
+    setupMasterWrite();
+    swdWriteBits(0x00, 8);
+}
+
+void swdDisplayDeviceDetails(uint32_t idcode)
+{
+    
+        printf("     [ Device 0 ]  0x%08X ",  idcode);
+        uint32_t idc = idcode;
+        long part = (idc & 0xffff000) >> 12;
+        int bank=(idc & 0xf00) >> 8;
+        int id=(idc & 0xfe) >> 1;
+        int ver=(idc & 0xf0000000) >> 28;
+
+        if (id > 1 && id <= 126 && bank <= 8) 
+        {
+            printf("(mfg: '%s' , part: 0x%x, ver: 0x%x)\n",jep106_table_manufacturer(bank,id), part, ver);
+        }
+
+    printf("\n");
+}
+
+void swdDisplayPinout(int swdio, int swclk, uint32_t idcode)
+{
+    printf("     [  Pinout  ]  SWDIO=CH%d", swdio);
+    printf(" SWCLK=CH%d\n\n", swclk);
+    swdDisplayDeviceDetails(idcode);
+}
+
+
+
+bool testSwdLines(uint new_swclk_Pin, uint new_swdio_pin)
+{
+    bool result = false;
+    uint32_t readBuffer = 0;
+    swdSetPins(new_swclk_Pin, new_swdio_pin);
+    swdSetupPins();
+    switchJtagToSwd();
+    swdReadIdCode(&readBuffer);
+    result = getAck(readBuffer) == 1;
+    if(result)
+    {
+        swdDisplayPinout(swdioPin, swclkPin, getIDCode(readBuffer));
+    }
+    swdResetPins();
+    return result;
+}
+
+void swdScan(void)
+{ 
+    bool result = false;
+    int channelCount = getSwdChannels();
+    for(uint clkPin=0; clkPin < channelCount; clkPin++)
+    {
+        for(uint ioPin=0; ioPin < channelCount; ioPin++)
+        {
+            if( clkPin == ioPin)
+            {
+                continue;
+            }
+            result |= testSwdLines(clkPin, ioPin);
+            if (result) break;
+        }
+        if (result) break; 
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
 int main()
 {
     stdio_init_all();
@@ -627,7 +853,7 @@ int main()
                 break;
 
             case 's':
-                printf("bypass scan");
+                swdScan();
                 break;
 
             case 'p':
