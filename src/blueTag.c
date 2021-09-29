@@ -862,7 +862,10 @@ void swdTrySWDJ(void)
 
 bool swdBruteForce(void)
 {
+    // onBoard LED notification
+    gpio_put(onboardLED, 1);
     swdTrySWDJ();
+    gpio_put(onboardLED, 0);
     if(swdDeviceFound)
     { return(true); } else { return(false); }
 }
