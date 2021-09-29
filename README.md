@@ -1,6 +1,6 @@
 # [ blueTag ] 
     
-JTAGulator alternative based on Raspberry Pi Pico 
+JTAGulator alternative based on Raspberry Pi Pico. Huge shout-out to Joe Grand for his JTAGulator project!
 
 
 
@@ -18,7 +18,7 @@ JTAGulator alternative based on Raspberry Pi Pico
 - Connect Raspberry Pi Pico's GPIO pins (GPIO0-GPIO8 so 9 channels in all) to your target's test-points
 - Open a terminal emulator program of your choice that supports "Serial" communication (Ex. Teraterm, Putty, Minicom)
 - Select "Serial" communication & connect to Pico's newly assigned COM port
-- blueTag supports auto-baudrate so you should not have to to perform any additional settings
+- blueTag supports auto-baudrate so you should not have to perform any additional settings
 - Press any key in the terminal emulator program to start using blueTag
 
 Note: Pico's GPIO pins function at 3.3v. For connecting to devices running other voltage levels, use of external level shifter(s) will be required
