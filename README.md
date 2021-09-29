@@ -5,8 +5,7 @@ JTAGulator alternative based on Raspberry Pi Pico
 
 
 
-
-<img src = “images/swd.JPG” width ="200" height =_>
+![Alt text](images/swd.JPG?raw=true "Title")
 
 
 
