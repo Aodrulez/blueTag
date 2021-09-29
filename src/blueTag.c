@@ -291,7 +291,7 @@ const char *jep106_table_manufacturer(unsigned int bank, unsigned int id)
 	/* index is zero based */
 	id--;
 	if (bank >= ARRAY_SIZE(jep106) || jep106[bank][id] == 0)
-		return "<unknown>";
+		return "Unknown";
 	return jep106[bank][id];
 }
 
@@ -891,6 +891,10 @@ void swdScan(void)
             if (result) break;
         }
         if (result) break; 
+    }
+    if(swdDeviceFound == false)
+    {
+        printf("     No devices found. Please try again.\n\n");
     }
 }
 
