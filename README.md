@@ -5,10 +5,10 @@ JTAGulator alternative based on Raspberry Pi Pico
 
 
 
-![Alt text](images/swd.JPG?raw=true "Title")
+![blueTag detecting SWD pinout on STM32 Blue Pill & a Raspberry Pi Pico](images/swd.JPG?raw=true "Title")
 
 
-
+![blueTag detecting JTAG pinout on a wireless router](images/router.JPG?raw=true "Title")
 
 # References & special thanks
 
