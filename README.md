@@ -2,6 +2,15 @@
     
 JTAGulator alternative based on Raspberry Pi Pico 
 
+
+
+
+
+<img src = “images/swd.JPG” width ="200" height =_>
+
+
+
+
 # References & special thanks
 
 - https://github.com/grandideastudio/jtagulator
