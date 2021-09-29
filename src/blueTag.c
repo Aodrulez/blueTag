@@ -1,3 +1,16 @@
+/* 
+    [ blueTag - JTAGulator alternative based on Raspberry Pi Pico ]
+
+        Inspired by JTAGulator. 
+
+    [References & special thanks]
+        https://github.com/grandideastudio/jtagulator
+        https://research.kudelskisecurity.com/2019/05/16/swd-arms-alternative-to-jtag/
+        https://github.com/jbentham/picoreg
+        https://github.com/szymonh/SWDscan
+        Arm Debug Interface Architecture Specification (debug_interface_v5_2_architecture_specification_IHI0031F.pdf)  
+*/
+
 #include <stdio.h>
 #include "pico/stdlib.h"
 
@@ -45,7 +58,7 @@ uint xTRST;
 
 // include file from openocd/src/helper
 static const char * const jep106[][126] = {
-    #include "jep106.inc"
+#include "jep106.inc"
 };
 
 
@@ -607,27 +620,220 @@ void initChannels(void)
 //----------------------------------SWD-----------------------------------------
 
 
-#define RESET_SEQUENCE_LENGTH 64
-#define CLOCK_HALF_CYCLE_US 5
-#define JTAG_TO_SWD 0xE79E
+// #define RESET_SEQUENCE_LENGTH 64
+// #define CLOCK_HALF_CYCLE_US 5
+// #define JTAG_TO_SWD 0xE79E
 
 
-#define ROW_FORMAT "CLK: %2d | IO: %2d | ACK: %ld | PART: 0x%08x\r\n"
-#define PROMPT "> "
+// #define PROMPT "> "
 
-#define getAck(value) (value & 0x7)
-#define getIDCode(value) ((value >> 3))
+// #define getAck(value) (value & 0x7)
+// #define getIDCode(value) ((value >> 3))
 
+// #define bitRead(value, bit) (((value) >> (bit)) & 0x01)
+// #define bitSet(value, bit) ((value) |= (1UL << (bit)))
+// #define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
+// #define bitWrite(value, bit, bitvalue) ((bitvalue) ? bitSet(value, bit) : bitClear(value, bit))
+
+
+
+// uint swclkPin;
+// uint swdioPin;
+
+// int getSwdChannels(void)
+// {
+//     char x;
+//     printf("     Enter number of channels hooked up (Min 2, Max %d): ", maxChannels);
+//     x = getc(stdin);
+//     printf("%c\n",x);
+//     x = x - 48;
+//     while(x < 2 || x > maxChannels)
+//     {
+//         printf("     Enter a valid value: ");
+//         x = getc(stdin);
+//         printf("%c\n",x);
+//         x = x - 48;
+//     }
+//     printf("     Number of channels set to: %d\n",x);
+//     printf("     Note: SWD scan is slow, this might take some time. \n\n");
+//     return(x);
+// }
+
+// void setupMasterWrite(void)
+// {
+//     gpio_set_dir(swdioPin, GPIO_OUT);
+// }
+
+// void setupMasterRead(void)
+// {
+//     gpio_set_dir(swdioPin, GPIO_IN);
+// }
+
+// void swdSetupPins(void)
+// {
+//    gpio_set_dir(swdioPin, GPIO_OUT);
+//    gpio_set_dir(swclkPin, GPIO_OUT);
+// }
+
+// void swdResetPins(void)
+// {
+//    gpio_set_dir(swdioPin, GPIO_IN);
+//    gpio_set_dir(swclkPin, GPIO_IN);
+// }
+
+// void swdSetPins(uint newSwdClkPin, uint newSwdioPin)
+// {
+//     swclkPin = newSwdClkPin;
+//     swdioPin = newSwdioPin;
+// }
+
+// void swdPulseClock(void)
+// {
+//     gpio_put(swclkPin, 0);
+//     sleep_ms(CLOCK_HALF_CYCLE_US);
+//     gpio_put(swclkPin, 1);
+//     sleep_ms(CLOCK_HALF_CYCLE_US);
+// }
+
+// void swdResetLine(void)
+// {
+//     gpio_put(swdioPin, 1);
+//     for (int i=0 ; i<RESET_SEQUENCE_LENGTH ; i++)
+//     {
+//         swdPulseClock();
+//     }
+// }
+
+// void swdWriteBit(bool value)
+// {
+//     gpio_put(swdioPin, value);
+//     swdPulseClock();
+// }
+
+// void swdWriteBits(long value, int length)
+// {
+//     for (int i=0; i<length; i++)
+//     {
+//         swdWriteBit(bitRead(value, i));
+//     }
+// }
+
+// void swdReadBits(long *value, int length)
+// {
+//     setupMasterRead();
+//     for (int i=0; i<length; i++)
+//     {
+//         bool bitValue = gpio_get(swdioPin);
+//         bitWrite(*value, i, bitValue);
+//         swdPulseClock();
+//     }
+//     setupMasterWrite();
+// }
+
+// void turnaround(void)
+// {
+//     setupMasterRead();
+//     swdPulseClock();
+// }
+
+// void switchJtagToSwd(void)
+// {
+//     swdResetLine();
+//     swdWriteBits(JTAG_TO_SWD, 16);
+//     swdResetLine();
+//     swdWriteBits(0x00, 4);
+// }
+
+// void swdReadIdCode(long *buffer)
+// {
+//     swdWriteBits(0xA5, 8);             // readIdCode command 0b10100101
+//     turnaround();
+//     swdReadBits(buffer, 36);           // ack + data + parity
+//     turnaround();
+//     setupMasterWrite();
+//     swdWriteBits(0x00, 8);
+// }
+
+// void swdDisplayDeviceDetails(uint32_t idcode)
+// {
+    
+//         printf("     [ Device 0 ]  0x%08X ",  idcode);
+//         uint32_t idc = idcode;
+//         long part = (idc & 0xffff000) >> 12;
+//         int bank=(idc & 0xf00) >> 8;
+//         int id=(idc & 0xfe) >> 1;
+//         int ver=(idc & 0xf0000000) >> 28;
+
+//         if (id > 1 && id <= 126 && bank <= 8) 
+//         {
+//             printf("(mfg: '%s' , part: 0x%x, ver: 0x%x)\n",jep106_table_manufacturer(bank,id), part, ver);
+//         }
+
+//     printf("\n");
+// }
+
+// void swdDisplayPinout(int swdio, int swclk, uint32_t idcode)
+// {
+//     printf("     [  Pinout  ]  SWDIO=CH%d", swdio);
+//     printf(" SWCLK=CH%d\n\n", swclk);
+//     swdDisplayDeviceDetails(idcode);
+// }
+
+
+
+// bool testSwdLines(uint new_swclk_Pin, uint new_swdio_pin)
+// {
+//     bool result = false;
+//     uint32_t readBuffer = 0;
+//     swdSetPins(new_swclk_Pin, new_swdio_pin);
+//     swdSetupPins();
+//     switchJtagToSwd();
+//     swdReadIdCode(&readBuffer);
+//     result = getAck(readBuffer) == 1;
+//     if(result)
+//     {
+//         swdDisplayPinout(swdioPin, swclkPin, getIDCode(readBuffer));
+//     }
+//     swdResetPins();
+//     return result;
+// }
+
+// void swdScanOrig(void)
+// { 
+//     bool result = false;
+//     int channelCount = getSwdChannels();
+//     for(uint clkPin=0; clkPin < channelCount; clkPin++)
+//     {
+//         for(uint ioPin=0; ioPin < channelCount; ioPin++)
+//         {
+//             if( clkPin == ioPin)
+//             {
+//                 continue;
+//             }
+//             result |= testSwdLines(clkPin, ioPin);
+//             if (result) break;
+//         }
+//         if (result) break; 
+//     }
+// }
+
+
+//-------------------------------------SWD Scan [custom implementation]-----------------------------
+     
+
+#define LINE_RESET_CLK_CYCLES 52        // Atleast 50 cycles, selecting 52 
+#define LINE_RESET_CLK_IDLE_CYCLES 2    // For Line Reset, have to send both of these
+#define SWD_DELAY 5
+#define JTAG_TO_SWD_CMD 0xE79E
+#define SWDP_ACTIVATION_CODE 0x1A
 #define bitRead(value, bit) (((value) >> (bit)) & 0x01)
 #define bitSet(value, bit) ((value) |= (1UL << (bit)))
 #define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
 #define bitWrite(value, bit, bitvalue) ((bitvalue) ? bitSet(value, bit) : bitClear(value, bit))
 
-
-
-uint swclkPin;
-uint swdioPin;
-
+uint xSwdClk=0;
+uint xSwdIO=1;
+bool swdDeviceFound=false;
 int getSwdChannels(void)
 {
     char x;
@@ -647,104 +853,8 @@ int getSwdChannels(void)
     return(x);
 }
 
-void setupMasterWrite(void)
-{
-    gpio_set_dir(swdioPin, GPIO_OUT);
-}
-
-void setupMasterRead(void)
-{
-    gpio_set_dir(swdioPin, GPIO_IN);
-}
-
-void swdSetupPins(void)
-{
-   gpio_set_dir(swdioPin, GPIO_OUT);
-   gpio_set_dir(swclkPin, GPIO_OUT);
-}
-
-void swdResetPins(void)
-{
-   gpio_set_dir(swdioPin, GPIO_IN);
-   gpio_set_dir(swclkPin, GPIO_IN);
-}
-
-void swdSetPins(uint newSwdClkPin, uint newSwdioPin)
-{
-    swclkPin = newSwdClkPin;
-    swdioPin = newSwdioPin;
-}
-
-void swdPulseClock(void)
-{
-    gpio_put(swclkPin, 0);
-    sleep_ms(CLOCK_HALF_CYCLE_US);
-    gpio_put(swclkPin, 1);
-    sleep_ms(CLOCK_HALF_CYCLE_US);
-}
-
-void swdResetLine(void)
-{
-    gpio_put(swdioPin, 1);
-    for (int i=0 ; i<RESET_SEQUENCE_LENGTH ; i++)
-    {
-        swdPulseClock();
-    }
-}
-
-void swdWriteBit(bool value)
-{
-    gpio_put(swdioPin, value);
-    swdPulseClock();
-}
-
-void swdWriteBits(long value, int length)
-{
-    for (int i=0; i<length; i++)
-    {
-        swdWriteBit(bitRead(value, i));
-    }
-}
-
-void swdReadBits(long *value, int length)
-{
-    setupMasterRead();
-    for (int i=0; i<length; i++)
-    {
-        bool bitValue = gpio_get(swdioPin);
-        bitWrite(*value, i, bitValue);
-        swdPulseClock();
-    }
-    setupMasterWrite();
-}
-
-void turnaround(void)
-{
-    setupMasterRead();
-    swdPulseClock();
-}
-
-void switchJtagToSwd(void)
-{
-    swdResetLine();
-    swdWriteBits(JTAG_TO_SWD, 16);
-    swdResetLine();
-    swdWriteBits(0x00, 4);
-}
-
-void swdReadIdCode(long *buffer)
-{
-    swdWriteBits(0xA5, 8);             // readIdCode command 0b10100101
-    turnaround();
-    swdReadBits(buffer, 36);           // ack + data + parity
-    turnaround();
-    setupMasterWrite();
-    swdWriteBits(0x00, 8);
-}
-
 void swdDisplayDeviceDetails(uint32_t idcode)
 {
-    
         printf("     [ Device 0 ]  0x%08X ",  idcode);
         uint32_t idc = idcode;
         long part = (idc & 0xffff000) >> 12;
@@ -756,9 +866,9 @@ void swdDisplayDeviceDetails(uint32_t idcode)
         {
             printf("(mfg: '%s' , part: 0x%x, ver: 0x%x)\n",jep106_table_manufacturer(bank,id), part, ver);
         }
-
     printf("\n");
 }
+
 
 void swdDisplayPinout(int swdio, int swclk, uint32_t idcode)
 {
@@ -768,37 +878,215 @@ void swdDisplayPinout(int swdio, int swclk, uint32_t idcode)
 }
 
 
-
-bool testSwdLines(uint new_swclk_Pin, uint new_swdio_pin)
+void initSwdPins(void)
 {
-    bool result = false;
-    uint32_t readBuffer = 0;
-    swdSetPins(new_swclk_Pin, new_swdio_pin);
-    swdSetupPins();
-    switchJtagToSwd();
-    swdReadIdCode(&readBuffer);
-    result = getAck(readBuffer) == 1;
-    if(result)
+    gpio_set_dir(xSwdClk,GPIO_OUT);
+    gpio_set_dir(xSwdIO,GPIO_OUT);
+}
+
+void swdClockPulse(void)
+{
+    gpio_put(xSwdClk, 0);
+    sleep_ms(SWD_DELAY);
+    gpio_put(xSwdClk, 1);
+    sleep_ms(SWD_DELAY);
+}
+
+
+void swdSetReadMode(void)
+{
+    gpio_set_dir(xSwdIO,GPIO_IN);
+}
+
+void swdTurnAround(void)
+{
+    swdSetReadMode();
+    swdClockPulse();
+}
+
+void swdSetWriteMode(void)
+{
+    gpio_set_dir(xSwdIO,GPIO_OUT);
+}
+
+void swdIOHigh(void)
+{
+    gpio_put(xSwdIO, 1);
+}
+
+void swdIOLow(void)
+{
+    gpio_put(xSwdIO, 0);
+}
+
+void swdWriteHigh(void)
+{
+    gpio_put(xSwdIO, 1);
+    swdClockPulse();
+}
+
+void swdWriteLow(void)
+{
+    gpio_put(xSwdIO, 0);
+    swdClockPulse();
+}
+
+bool swdReadBit(void)
+{
+    bool value=gpio_get(xSwdIO);
+    swdClockPulse();
+    return(value);
+}
+
+void swdReadDPIDR(void)
+{
+    long buffer;
+    bool value;
+    for(int x=0; x< 32; x++)
     {
-        swdDisplayPinout(swdioPin, swclkPin, getIDCode(readBuffer));
+        value=swdReadBit();
+        bitWrite(buffer, x, value);
     }
-    swdResetPins();
-    return result;
+    swdDisplayPinout(xSwdIO, xSwdClk, buffer);
+}
+
+// Receive ACK response from SWD device & verify if OK
+bool swdReadAck(void)
+{
+    bool bit1=swdReadBit();
+    bool bit2=swdReadBit();
+    bool bit3=swdReadBit();
+    if(bit1 == true && bit2 == false && bit3 == false)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+void swdWriteBit(bool value)
+{
+    gpio_put(xSwdIO, value);
+    swdClockPulse();
+}
+
+void swdWriteBits(long value, int length)
+{
+    for (int i=0; i<length; i++)
+    {
+        swdWriteBit(bitRead(value, i));
+    }
+}
+
+void swdResetLineSWDJ(void)
+{
+    swdIOHigh();
+    for(int x=0; x < LINE_RESET_CLK_CYCLES+10; x++)
+    {
+        swdClockPulse();
+    }
+}
+
+void swdResetLineSWD(void)
+{
+    swdIOHigh();
+    for(int x=0; x < LINE_RESET_CLK_CYCLES+10; x++)
+    {
+        swdClockPulse();
+    }
+    swdIOLow();
+    swdClockPulse();
+    swdClockPulse();
+    swdClockPulse();
+    swdClockPulse();
+    swdIOHigh();
+}
+
+// Leave dormant state
+void swdArmWakeUp(void)
+{
+    swdSetWriteMode();
+    swdIOHigh();
+    for(int x=0;x < 8; x++)     // Reset to selection Alert Sequence
+    {
+        swdClockPulse();
+    }
+
+    // Send selection alert sequence 0x19BC0EA2 E3DDAFE9 86852D95 6209F392 (128 bits)
+    swdWriteBits(0x92, 8);
+    swdWriteBits(0xf3, 8);
+    swdWriteBits(0x09, 8);
+    swdWriteBits(0x62, 8);
+
+    swdWriteBits(0x95, 8);
+    swdWriteBits(0x2D, 8);
+    swdWriteBits(0x85, 8);
+    swdWriteBits(0x86, 8);
+
+    swdWriteBits(0xE9, 8);
+    swdWriteBits(0xAF, 8);
+    swdWriteBits(0xDD, 8);
+    swdWriteBits(0xE3, 8);
+
+    swdWriteBits(0xA2, 8);
+    swdWriteBits(0x0E, 8);
+    swdWriteBits(0xBC, 8);
+    swdWriteBits(0x19, 8);
+
+    swdWriteBits(0x00, 4);   // idle bits
+    swdWriteBits(SWDP_ACTIVATION_CODE, 8);
+}
+
+
+void swdTrySWDJ(void)
+{
+    swdSetWriteMode();
+    swdArmWakeUp();                     // Needed for devices like RPi Pico
+    swdResetLineSWDJ();
+    swdWriteBits(JTAG_TO_SWD_CMD, 16);
+    swdResetLineSWDJ();
+    swdWriteBits(0x00, 4);
+
+    swdWriteBits(0xA5, 8);             // readIdCode command 0b10100101
+    swdTurnAround();
+    
+    if(swdReadAck() == true)           // Got ACK OK
+    {
+        swdDeviceFound=true;
+        swdReadDPIDR();
+    }
+    swdTurnAround();
+    swdSetWriteMode();
+    swdWriteBits(0x00, 8);
+}
+
+bool swdBruteForce(void)
+{
+    swdTrySWDJ();
+    if(swdDeviceFound)
+    { return(true); } else { return(false); }
 }
 
 void swdScan(void)
 { 
-    bool result = false;
+    
+    swdDeviceFound = false;
+    bool result = false;    
     int channelCount = getSwdChannels();
     for(uint clkPin=0; clkPin < channelCount; clkPin++)
     {
+        xSwdClk = clkPin;
         for(uint ioPin=0; ioPin < channelCount; ioPin++)
         {
-            if( clkPin == ioPin)
+            xSwdIO = ioPin;
+            if( xSwdClk == xSwdIO)
             {
                 continue;
             }
-            result |= testSwdLines(clkPin, ioPin);
+            initSwdPins();
+            result = swdBruteForce();
             if (result) break;
         }
         if (result) break; 
@@ -807,13 +1095,7 @@ void swdScan(void)
 
 
 
-
-
-
-
-
-
-
+//--------------------------------------------Main--------------------------------------------------
 
 int main()
 {
@@ -824,11 +1106,8 @@ int main()
     gpio_set_dir(onboardLED, GPIO_OUT);
     initChannels();
     jPulsePins=true;
-
-
-
-    //get user input to display splash & menu
     
+    //get user input to display splash & menu    
     cmd=getc(stdin);
     splashScreen();
     showMenu();
@@ -884,8 +1163,6 @@ int main()
                 break;
         }
         showPrompt();
-    }
-    
-
+    }    
     return 0;
 }
