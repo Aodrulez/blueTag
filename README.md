@@ -16,6 +16,7 @@ JTAGulator alternative based on Raspberry Pi Pico. Huge shout-out to Joe Grand f
 ## Usage
 - Connect Raspberry Pi Pico running blueTag to your computer using USB cable
 - Connect Raspberry Pi Pico's GPIO pins (GPIO0-GPIO8 so 9 channels in all) to your target's test-points
+- Connect Raspberry Pi Pico's "GND" pin to target's "GND"
 - Open a terminal emulator program of your choice that supports "Serial" communication (Ex. Teraterm, Putty, Minicom)
 - Select "Serial" communication & connect to Pico's newly assigned COM port
 - blueTag supports auto-baudrate detection so you should not have to perform any additional settings
