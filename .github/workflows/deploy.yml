@@ -40,5 +40,5 @@ jobs:
             uses: softprops/action-gh-release@v1
             if: startsWith(github.ref, 'refs/tags/')
             with:
-                files: ${{ env.app_name }}.uf2
+                files: ${{ env.app_name }}${{ github.ref_name }}.uf2
                 body_path: CHANGELOG.md
