@@ -10,3 +10,13 @@ Features:
 
  - Implemented github actions for online compilation
  - Added workflow to automatically generate uf2 binary on each release
+
+## 1.0.0 (2023-02-11)
+
+Fixes:
+
+ - None
+ 
+Features:
+
+ - Initial release
