@@ -1,6 +1,6 @@
 # CHANGELOG.md
 
-## 1.0.1 (2023-02-11)
+## 1.0.1 (2024-07-31)
 
 Fixes:
 
@@ -11,7 +11,7 @@ Features:
  - Implemented github actions for online compilation
  - Added workflow to automatically generate uf2 binary on each release
 
-## 1.0.0 (2023-02-11)
+## 1.0.0 (2021-09-29)
 
 Fixes:
 
