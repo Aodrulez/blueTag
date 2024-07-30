@@ -31,7 +31,7 @@ jobs:
             run: docker create --name pico-builder-container pico-builder-image
             
           - name: Copy out .uf2 file
-            run: docker cp pico-builder-container:/project/src/build/${APP_NAME}.uf2 ./${APP_NAME}.uf2
+            run: docker cp pico-builder-container:/project/src/build/${APP_NAME}.uf2 ./${APP_NAME}-${{ github.ref_name }}.uf2
             
           - name: Put environment variable into the env context
             run: echo "app_name=$APP_NAME" >> $GITHUB_ENV
@@ -40,5 +40,5 @@ jobs:
             uses: softprops/action-gh-release@v1
             if: startsWith(github.ref, 'refs/tags/')
             with:
-                files: ${{ env.app_name }}${{ github.ref_name }}.uf2
+                files: ${{ env.app_name }}-${{ github.ref_name }}.uf2
                 body_path: CHANGELOG.md
