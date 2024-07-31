@@ -8,9 +8,9 @@ JTAGulator alternative based on Raspberry Pi Pico. Huge shout-out to Joe Grand f
 ![](images/swd.JPG?raw=true "blueTag detecting SWD pinout on STM32 Blue Pill & a Raspberry Pi Pico")
 
 ## Installation
-- Download latest release version of blueTag ("blueTag-vX.uf2") from this github repository
+- Download latest release version of blueTag ("blueTag-v*.*.*.uf2") from this github repository
 - Press & hold 'BOOTSEL' button on a Raspberry Pi Pico, connect it to a computer via USB cable & then release the button
-- Copy "blueTag-vX.uf2" file onto the newly detected flash drive (RPI-RP2) on your computer
+- Copy "blueTag-v*.*.*.uf2" file onto the newly detected flash drive (RPI-RP2) on your computer
 
 
 ## Usage
