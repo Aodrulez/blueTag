@@ -14,11 +14,11 @@ JTAGulator alternative for RP2040 microcontroller based development boards inclu
 
 
 ## Usage
-- Connect RP2040 microcontroller based development board running blueTag to your computer using USB cable
-- Connect RP2040 microcontroller based development board's GPIO pins (GPIO0-GPIO8 so 9 channels in all) to your target's test-points
-- Connect RP2040 microcontroller based development board's "GND" pin to target's "GND"
+- Connect the RP2040 microcontroller based development board running blueTag to your computer using USB cable
+- Connect the development board's GPIO pins (GPIO0-GPIO8 so 9 channels in all) to your target's test-points
+- Connect the development board's "GND" pin to target's "GND"
 - Open a terminal emulator program of your choice that supports "Serial" communication (Ex. Teraterm, Putty, Minicom)
-- Select "Serial" communication & connect to RP2040 microcontroller based development board's newly assigned COM port
+- Select "Serial" communication & connect to the development board's newly assigned COM port
 - blueTag supports auto-baudrate detection so you should not have to perform any additional settings
 - Press any key in the terminal emulator program to start using blueTag
 
