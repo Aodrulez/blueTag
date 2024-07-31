@@ -22,7 +22,8 @@ JTAGulator alternative for RP2040 microcontroller based development boards inclu
 - blueTag supports auto-baudrate detection so you should not have to perform any additional settings
 - Press any key in the terminal emulator program to start using blueTag
 
-Note: Most RP2040 microcontroller based development board's GPIO pins function at 3.3v. For connecting to devices running other voltage levels, use of external level shifter(s) will be required
+> **_NOTE:_** Most RP2040 microcontroller based development board's GPIO pins function at 3.3v. For connecting to devices running other voltage levels, use of external level shifter(s) will be required.
+
 ## References & special thanks
 
 - https://github.com/grandideastudio/jtagulator
