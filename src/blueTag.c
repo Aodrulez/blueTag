@@ -67,10 +67,10 @@ void splashScreen(void)
 {
     printf("\n%s",banner);
     printf("\n");
-    printf("\n          [   JTAGulator alternative based on Raspberry Pi Pico   ]");
-    printf("\n          +-------------------------------------------------------+");
-    printf("\n          | @Aodrulez         https://github.com/Aodrulez/blueTag |");
-    printf("\n          +-------------------------------------------------------+\n\n");   
+    printf("\n          [ JTAGulator alternative for Raspberry Pi RP2040 Dev Boards ]");
+    printf("\n          +-----------------------------------------------------------+");
+    printf("\n          | @Aodrulez             https://github.com/Aodrulez/blueTag |");
+    printf("\n          +-----------------------------------------------------------+\n\n");   
 }
 
 void showPrompt(void)
