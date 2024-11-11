@@ -7,6 +7,11 @@ JTAGulator alternative for RP2040 microcontroller based development boards inclu
 
 ![](images/swd.JPG?raw=true "blueTag detecting SWD pinout on STM32 Blue Pill & a Raspberry Pi Pico")
 
+
+## Pinout
+![](images/BlueTagPinout.png?raw=true "blueTag Pinout")
+
+
 ## Installation
 - Download latest release version of blueTag ("blueTag-vX.X.X.uf2") from this github repository's release section
 - Press & hold 'BOOTSEL' button on a RP2040 microcontroller based development board, connect it to a computer via USB cable & then release the button
