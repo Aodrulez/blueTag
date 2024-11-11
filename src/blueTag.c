@@ -36,7 +36,7 @@ char *version="1.0.2";
 const uint onboardLED = 25;
 const uint unusedGPIO = 28;                               // Pins on Pico are accessed using GPIO names
 const uint MAX_NUM_JTAG  = 32;
-const uint maxChannels = 16;                               // Max number of channels supported by Pico  
+const uint maxChannels = 15;                               // Max number of channels supported by Pico  
 
 char cmd;
 
