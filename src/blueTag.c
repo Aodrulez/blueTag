@@ -31,12 +31,15 @@ char *version="1.0.2";
 #define  MAX_IR_CHAIN_LEN   MAX_DEVICES_LEN * MAX_IR_LEN   // Maximum total length of JTAG chain w/ IR selected
 #define  MAX_DR_LEN         4096                           // Maximum length of data register
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof(*array))
-
+#define ENDSTDIN	    255
+#define CR		    13
+#define LF		    10
 
 const uint onboardLED = 25;
 const uint unusedGPIO = 28;                               // Pins on Pico are accessed using GPIO names
 const uint MAX_NUM_JTAG  = 32;
 const uint maxChannels = 16;                               // Max number of channels supported by Pico  
+
 
 char cmd;
 
@@ -89,19 +92,46 @@ void showMenu(void)
     printf(" [ Note: Disable 'local echo' in your terminal emulator program ]\n\n");
 }
 
+int stringToInt(char * s)
+{
+    int res = 0;
+    for(size_t i=0; i<strlen(s); i++)
+        res = (res * 10) + (s[i] - '0');
+    return res;
+}
+
+int getIntFromSerial(void)
+{
+    char strg[3];
+    char chr;
+    int lp = 0;
+    int value = 0;
+    chr = getchar_timeout_us(0);
+    while(chr != ENDSTDIN)
+    {
+	strg[lp++] = chr;
+	if(chr == CR || chr == LF || lp == (sizeof(strg) - 1))
+	{
+		strg[lp] = 0;	//terminate string
+		value = stringToInt(strg);
+		lp = 0;		//reset string buffer pointer
+		break;
+	}
+	chr = getchar_timeout_us(0);
+    }
+}
+
 int getChannels(void)
 {
-    char x;
+    int x;
     printf("     Enter number of channels hooked up (Min 4, Max %d): ", maxChannels);
-    x = getc(stdin);
-    printf("%c\n",x);
-    x = x - 48;
+    x = getIntFromSerial();
+    printf("%d\n",x);
     while(x < 4 || x > maxChannels)
     {
         printf("     Enter a valid value: ");
-        x = getc(stdin);
-        printf("%c\n",x);
-        x = x - 48;
+        x = getIntFromSerial();
+        printf("%d\n",x);        
     }
     printf("     Number of channels set to: %d\n\n",x);
     return(x);
