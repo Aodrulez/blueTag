@@ -1,10 +1,11 @@
 # CHANGELOG.md
 
-## 1.0.2 (2024-11-11)
+## 1.0.2 (2024-11-19)
 
 Fixes:
 
- - None
+ - JTAG scan function underwent a major change, should be more reliable now
+ - SWD scan time is now optimized, should be much faster than before
  
 Features:
  - Updated default available channels from 9 to 16 
