@@ -939,12 +939,12 @@ bool swdBruteForce(void)
     { return(true); } else { return(false); }
 }
 
-void swdScan(void)
+bool swdScan(int channelCount)
 { 
     
     swdDeviceFound = false;
     bool result = false;    
-    int channelCount = getSwdChannels();
+    //int channelCount = getSwdChannels();
     progressCount = 0;
     maxPermutations = channelCount * (channelCount - 1);
     for(uint clkPin=0; clkPin < channelCount; clkPin++)
@@ -965,14 +965,12 @@ void swdScan(void)
         }
         if (result) break; 
     }
-    if(swdDeviceFound == false)
-    {
-        printProgress(maxPermutations, maxPermutations);
-        printf("\n\n");
-        printf("     No devices found. Please try again.\n\n");
-    }
+
     // Switch back to JTAG
     swdToJTAG();
+
+    // return success or fail
+    return swdDeviceFound;
 }
 
 //--------------------------------------------Main--------------------------------------------------
@@ -1011,8 +1009,13 @@ static int main()
                 jtagScan();
                 break;
 
-            case 's':
-                swdScan();
+            case 's':               
+                if(!swdScan(getSwdChannels()))
+                {
+                    printProgress(maxPermutations, maxPermutations);
+                    printf("\n\n");
+                    printf("     No devices found. Please try again.\n\n");
+                }                
                 break;
 
             case 'p':
