@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "pirate.h"
+#include "blueTag.h"
 
 const char *banner=R"banner(
              _______ ___     __   __ _______ _______ _______ _______ 
@@ -756,7 +757,7 @@ void swdDisplayPinout(int swdio, int swclk, uint32_t idcode)
     printf(" SWCLK=CH%d\n\n", swclk);
     swdDisplayDeviceDetails(idcode);
 }
-
+#if 0
 void initSwdPins(void)
 {
     gpio_set_dir(xSwdClk,GPIO_OUT);
@@ -775,13 +776,15 @@ void swdSetReadMode(void)
 {
     gpio_set_dir(xSwdIO,GPIO_IN);
 }
-
+#endif
 void swdTurnAround(void)
 {
-    swdSetReadMode();
-    swdClockPulse();
+    //swdSetReadMode();
+    swdSetReadMode(xSwdIO);
+    //swdClockPulse();
+    swdClockPulse(xSwdClk, SWD_DELAY);
 }
-
+#if 0
 void swdSetWriteMode(void)
 {
     gpio_set_dir(xSwdIO,GPIO_OUT);
@@ -815,6 +818,7 @@ bool swdReadBit(void)
     swdClockPulse();
     return(value);
 }
+#endif 
 
 void swdReadDPIDR(void)
 {
@@ -822,7 +826,8 @@ void swdReadDPIDR(void)
     bool value;
     for(int x=0; x< 32; x++)
     {
-        value=swdReadBit();
+        //value=swdReadBit();
+        value=swdReadBit(xSwdClk, xSwdIO, SWD_DELAY);
         bitWrite(buffer, x, value);
     }
     swdDisplayPinout(xSwdIO, xSwdClk, buffer);
@@ -831,9 +836,12 @@ void swdReadDPIDR(void)
 // Receive ACK response from SWD device & verify if OK
 bool swdReadAck(void)
 {
-    bool bit1=swdReadBit();
-    bool bit2=swdReadBit();
-    bool bit3=swdReadBit();
+    //bool bit1=swdReadBit();
+    bool bit1=swdReadBit(xSwdClk, xSwdIO, SWD_DELAY);
+    //bool bit2=swdReadBit();
+    bool bit2=swdReadBit(xSwdClk, xSwdIO, SWD_DELAY);
+    //bool bit3=swdReadBit();
+    bool bit3=swdReadBit(xSwdClk, xSwdIO, SWD_DELAY);
     if(bit1 == true && bit2 == false && bit3 == false)
     {
         return true;
@@ -847,7 +855,8 @@ bool swdReadAck(void)
 void swdWriteBit(bool value)
 {
     gpio_put(xSwdIO, value);
-    swdClockPulse();
+    //swdClockPulse();
+    swdClockPulse(xSwdClk, SWD_DELAY);
 }
 
 void swdWriteBits(long value, int length)
@@ -860,36 +869,49 @@ void swdWriteBits(long value, int length)
 
 void swdResetLineSWDJ(void)
 {
-    swdIOHigh();
+    //swdIOHigh();
+    swdIOHigh(xSwdIO);
     for(int x=0; x < LINE_RESET_CLK_CYCLES+10; x++)
     {
-        swdClockPulse();
+        //swdClockPulse();
+        swdClockPulse(xSwdClk, SWD_DELAY);
     }
 }
 
 void swdResetLineSWD(void)
 {
-    swdIOHigh();
+    //swdIOHigh();
+    swdIOHigh(xSwdIO);
     for(int x=0; x < LINE_RESET_CLK_CYCLES+10; x++)
     {
-        swdClockPulse();
+        //swdClockPulse();
+        swdClockPulse(xSwdClk, SWD_DELAY);
     }
-    swdIOLow();
-    swdClockPulse();
-    swdClockPulse();
-    swdClockPulse();
-    swdClockPulse();
-    swdIOHigh();
+    //swdIOLow();
+    swdIOLow(xSwdIO);
+    //swdClockPulse();
+    swdClockPulse(xSwdClk, SWD_DELAY);
+    //swdClockPulse();
+    swdClockPulse(xSwdClk, SWD_DELAY);
+    //swdClockPulse();
+    swdClockPulse(xSwdClk, SWD_DELAY);
+    //swdClockPulse();
+    swdClockPulse(xSwdClk, SWD_DELAY);
+    //swdIOHigh();
+    swdIOHigh(xSwdIO);    
 }
 
 // Leave dormant state
 void swdArmWakeUp(void)
 {
-    swdSetWriteMode();
-    swdIOHigh();
+    //swdSetWriteMode();
+    swdSetWriteMode(xSwdIO);
+    //swdIOHigh();
+    swdIOHigh(xSwdIO);
     for(int x=0;x < 8; x++)     // Reset to selection Alert Sequence
     {
-        swdClockPulse();
+        //swdClockPulse();
+        swdClockPulse(xSwdClk, SWD_DELAY);
     }
 
     // Send selection alert sequence 0x19BC0EA2 E3DDAFE9 86852D95 6209F392 (128 bits)
@@ -925,7 +947,8 @@ void swdToJTAG(void)
 
 void swdTrySWDJ(void)
 {
-    swdSetWriteMode();
+    //swdSetWriteMode();
+    swdSetWriteMode(xSwdIO);
     swdArmWakeUp();                     // Needed for devices like RPi Pico
     swdResetLineSWDJ();
     swdWriteBits(JTAG_TO_SWD_CMD, 16);
@@ -941,7 +964,8 @@ void swdTrySWDJ(void)
         swdReadDPIDR();
     }
     swdTurnAround();
-    swdSetWriteMode();
+    //swdSetWriteMode();
+    swdSetWriteMode(xSwdIO);
     swdWriteBits(0x00, 8);
 }
 
@@ -977,7 +1001,7 @@ bool swdScan(int channelCount)
             }
             printProgress(progressCount, maxPermutations);
             progressCount++;
-            initSwdPins();
+            initSwdPins(xSwdClk, xSwdIO);
             result = swdBruteForce();
             if (result) break;
         }
