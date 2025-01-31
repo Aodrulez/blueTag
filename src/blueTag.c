@@ -77,6 +77,14 @@ void onboardLEDset(bool state)
     #endif
 }
 
+void onboardLEDinit(void)
+{
+    #ifdef ONBOARD_LED
+    gpio_init(onboardLED);
+    gpio_set_dir(onboardLED, GPIO_OUT);
+    #endif
+}
+
 void splashScreen(void)
 {
     printf("\n%s",banner);
@@ -990,8 +998,9 @@ static int main()
     stdio_init_all();
 
     // GPIO init
-    gpio_init(onboardLED);
-    gpio_set_dir(onboardLED, GPIO_OUT);
+    //gpio_init(onboardLED);
+    //gpio_set_dir(onboardLED, GPIO_OUT);
+    onboardLEDinit();
     initChannels();
     jPulsePins=true;
     
