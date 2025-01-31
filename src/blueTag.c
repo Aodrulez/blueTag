@@ -14,6 +14,7 @@
 
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "pirate.h"
 
 const char *banner=R"banner(
              _______ ___     __   __ _______ _______ _______ _______ 
@@ -976,7 +977,7 @@ void swdScan(void)
 
 //--------------------------------------------Main--------------------------------------------------
 
-int main()
+static int main()
 {
     stdio_init_all();
 
@@ -1044,4 +1045,10 @@ int main()
         showPrompt();
     }    
     return 0;
+}
+
+///////////////// BUS PIRATE ADDITIONS //////////////////////
+void bluetag_jPulsePins_set(bool jPulsePins)
+{
+    jPulsePins = jPulsePins;
 }
