@@ -37,7 +37,9 @@ char *version="1.0.2";
 #define LF		    10
 #define ONBOARD_LED 25 //if not defined, onboard LED will not be used
 
+#ifdef ONBOARD_LED
 const uint onboardLED = ONBOARD_LED;
+#endif
 const uint unusedGPIO = 28;                               // Pins on Pico are accessed using GPIO names
 const uint MAX_NUM_JTAG  = 32;
 const uint maxChannels = 16;                               // Max number of channels supported by Pico  
