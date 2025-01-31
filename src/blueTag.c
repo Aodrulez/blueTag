@@ -565,13 +565,13 @@ int calculateJtagPermutations(int totalChannels)
     return result;
 }
 
-void jtagScan(void)
+bool jtagScan(int channelCount)
 {
-    int channelCount;
+    //int channelCount;
     uint32_t tempDeviceId;
     bool volatile foundPinout=false;
     jDeviceCount=0;
-    channelCount = getChannels();            // First get the number of channels hooked
+    //channelCount = getChannels();            // First get the number of channels hooked
     progressCount = 0;
     maxPermutations = calculateJtagPermutations(channelCount);
     jTDO, jTCK, jTMS, jTDI,jTRST = 0;
@@ -666,7 +666,7 @@ void jtagScan(void)
                               displayDeviceDetails();
                               // onBoard LED notification
                               gpio_put(onboardLED, 0);
-                              return;
+                              return true;
                             }                            
                         }
                         // onBoard LED notification
@@ -675,13 +675,8 @@ void jtagScan(void)
             }
         }
     }
-    if( foundPinout == false )
-    {
-        printProgress(maxPermutations, maxPermutations);
-        printf("\n\n");
-        printf("     No JTAG devices found. Please try again.\n\n");
-    }
 
+    return foundPinout;
 }
 
 
@@ -1006,7 +1001,12 @@ static int main()
                 break;
 
             case 'j':
-                jtagScan();
+                if(!jtagScan(getChannels()))
+                {
+                    printProgress(maxPermutations, maxPermutations);
+                    printf("\n\n");
+                    printf("     No JTAG devices found. Please try again.\n\n");
+                }
                 break;
 
             case 's':               
