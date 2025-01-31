@@ -1055,3 +1055,8 @@ void bluetag_jPulsePins_set(bool jPulsePins)
 {
     jPulsePins = jPulsePins;
 }
+
+void bluetag_progressbar_cleanup(void)
+{
+    printProgress(maxPermutations, maxPermutations);
+}
