@@ -35,8 +35,9 @@ char *version="1.0.2";
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof(*array))
 #define CR		    13
 #define LF		    10
+#define ONBOARD_LED 25 //if not defined, onboard LED will not be used
 
-const uint onboardLED = 25;
+const uint onboardLED = ONBOARD_LED;
 const uint unusedGPIO = 28;                               // Pins on Pico are accessed using GPIO names
 const uint MAX_NUM_JTAG  = 32;
 const uint maxChannels = 16;                               // Max number of channels supported by Pico  
@@ -66,6 +67,13 @@ static const char * const jep106[][126] = {
 };
 
 long int strtol(const char *str, char **endptr, int base);
+
+void onboardLEDset(bool state)
+{
+    #ifdef ONBOARD_LED
+    gpio_put(onboardLED, state);
+    #endif
+}
 
 void splashScreen(void)
 {
@@ -597,7 +605,8 @@ bool jtagScan(int channelCount)
                             continue;
                         }
                         // onBoard LED notification
-                        gpio_put(onboardLED, 1);
+                        //gpio_put(onboardLED, 1);
+                        onboardLEDset(1);
                         
                         progressCount = progressCount+1;
                         printProgress(progressCount, maxPermutations);
@@ -665,12 +674,14 @@ bool jtagScan(int channelCount)
                               displayPinout();
                               displayDeviceDetails();
                               // onBoard LED notification
-                              gpio_put(onboardLED, 0);
+                              //gpio_put(onboardLED, 0);
+                              onboardLEDset(0);
                               return true;
                             }                            
                         }
                         // onBoard LED notification
-                        gpio_put(onboardLED, 0);
+                        //gpio_put(onboardLED, 0);
+                        onboardLEDset(0);
                     }
             }
         }
@@ -927,9 +938,11 @@ void swdTrySWDJ(void)
 bool swdBruteForce(void)
 {
     // onBoard LED notification
-    gpio_put(onboardLED, 1);
+    //gpio_put(onboardLED, 1);
+    onboardLEDset(1);
     swdTrySWDJ();
-    gpio_put(onboardLED, 0);
+    //gpio_put(onboardLED, 0);
+    onboardLEDset(0);
     if(swdDeviceFound)
     { return(true); } else { return(false); }
 }
@@ -1034,9 +1047,11 @@ static int main()
             case 'x':
                 for(int x=0;x<=25;x++)
                 {
-                    gpio_put(onboardLED, 1);
+                    //gpio_put(onboardLED, 1);
+                    onboardLEDset(1);
                     sleep_ms(250);
-                    gpio_put(onboardLED, 0);
+                    //gpio_put(onboardLED, 0);
+                    onboardLEDset(0);
                     sleep_ms(250);
                 }
                 break;
