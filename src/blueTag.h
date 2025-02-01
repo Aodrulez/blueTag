@@ -17,6 +17,13 @@ bool jtagScan(uint channelCount);
 bool swdScan(struct swdScan_t *swd);
 extern char *version;
 
+//bio helper functions
+static inline uint gpio2bio(uint gpio)
+{
+    assert(gpio>=8 && gpio<=16);
+    return gpio - 8;
+}
+
 // JTAG IO functions
 
 // Function that sets all used channels to output high
@@ -101,13 +108,25 @@ static inline void trstLow(uint jTRST)
 }
 
 // SWD IO functions
-
+#define BUFDIR_INPUT 0
+#define BUFDIR_OUTPUT 1
 static inline void initSwdPins(uint xSwdClk, uint xSwdIO)
 {
     //gpio_set_dir(xSwdClk,GPIO_OUT);
     bio_output(gpio2bio(xSwdClk));
     //gpio_set_dir(xSwdIO,GPIO_OUT);
     bio_output(gpio2bio(xSwdIO));
+#if 0
+    // first set the buffer to output
+    gpio_put(gpio2bio(xSwdClk), BUFDIR_OUTPUT);
+    // now set pin to output
+    gpio_set_dir(gpio2bio(xSwdClk), GPIO_OUT);
+    // first set the buffer to output
+    gpio_put(gpio2bio(xSwdIO), BUFDIR_OUTPUT);
+    // now set pin to output
+    gpio_set_dir(gpio2bio(xSwdIO), GPIO_OUT);    
+#endif
+
 }
 
 static inline void swdClockPulse(uint xSwdClk, uint swd_delay)
@@ -122,12 +141,20 @@ static inline void swdSetReadMode(uint xSwdIO)
 {
     //gpio_set_dir(xSwdIO,GPIO_IN);
     bio_input(gpio2bio(xSwdIO));
+    // first set the pin to input
+    //gpio_set_dir(gpio2bio(xSwdIO), GPIO_IN);
+    // now set buffer to input
+    //gpio_put(gpio2bio(xSwdIO), BUFDIR_INPUT); 
 }
 
 static inline void swdSetWriteMode(uint xSwdIO)
 {
     //gpio_set_dir(xSwdIO,GPIO_OUT);
     bio_output(gpio2bio(xSwdIO));
+    // first set the buffer to output
+    //gpio_put(gpio2bio(xSwdIO), BUFDIR_OUTPUT);
+    // now set pin to output
+    //gpio_set_dir(gpio2bio(xSwdIO), GPIO_OUT);      
 }
 
 static inline void swdIOHigh(uint xSwdIO)
