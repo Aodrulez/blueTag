@@ -1,10 +1,20 @@
 #include "pirate.h"
 #include "pirate/bio.h"
 
+struct swdScan_t
+{
+    uint xSwdClk;
+    uint xSwdIO;
+    uint channelCount;
+    uint progressCount;
+    uint maxPermutations;
+    bool swdDeviceFound;
+};
+
 void bluetag_jPulsePins_set(bool jPulsePins);
-void bluetag_progressbar_cleanup(void);
+void bluetag_progressbar_cleanup(struct swdScan_t *swd);
 bool jtagScan(uint channelCount);
-bool swdScan(uint channelCount);
+bool swdScan(struct swdScan_t *swd);
 extern char *version;
 
 // JTAG IO functions

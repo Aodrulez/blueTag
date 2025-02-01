@@ -46,7 +46,7 @@ const uint startChannel = 8;                                // First GPIO pin to
 const uint maxChannels = 8;                               // Max number of channels supported by Pico  
 uint progressCount = 0;
 uint maxPermutations = 0;
-char cmd;
+
 
 uint jTDI;           
 uint jTDO;
@@ -755,9 +755,6 @@ bool jtagScan(uint channelCount)
 #define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
 #define bitWrite(value, bit, bitvalue) ((bitvalue) ? bitSet(value, bit) : bitClear(value, bit))
 
-uint xSwdClk=0;
-uint xSwdIO=1;
-bool swdDeviceFound=false;
 int getSwdChannels(void)
 {
     char x;
@@ -788,12 +785,12 @@ void swdDisplayDeviceDetails(uint32_t idcode)
     printf("\n");
 }
 
-void swdDisplayPinout(int swdio, int swclk, uint32_t idcode)
+void swdDisplayPinout(struct swdScan_t *swd, uint32_t idcode)
 {
-    printProgress(maxPermutations, maxPermutations);
+    printProgress(swd->maxPermutations, swd->maxPermutations);
     printf("\n\n");
-    printf("     [  Pinout  ]  SWDIO=CH%d", swdio);
-    printf(" SWCLK=CH%d\n\n", swclk);
+    printf("     [  Pinout  ]  SWDIO=CH%d", swd->xSwdIO);
+    printf(" SWCLK=CH%d\n\n", swd->xSwdClk);
     swdDisplayDeviceDetails(idcode);
 }
 #if 0
@@ -816,12 +813,12 @@ void swdSetReadMode(void)
     gpio_set_dir(xSwdIO,GPIO_IN);
 }
 #endif
-void swdTurnAround(void)
+void swdTurnAround(struct swdScan_t *swd)
 {
     //swdSetReadMode();
-    swdSetReadMode(xSwdIO);
+    swdSetReadMode(swd->xSwdIO);
     //swdClockPulse();
-    swdClockPulse(xSwdClk, SWD_DELAY);
+    swdClockPulse(swd->xSwdClk, SWD_DELAY);
 }
 #if 0
 void swdSetWriteMode(void)
@@ -859,28 +856,28 @@ bool swdReadBit(void)
 }
 #endif 
 
-void swdReadDPIDR(void)
+void swdReadDPIDR(struct swdScan_t *swd)
 {
     long buffer;
     bool value;
     for(int x=0; x< 32; x++)
     {
         //value=swdReadBit();
-        value=swdReadBit(xSwdClk, xSwdIO, SWD_DELAY);
+        value=swdReadBit(swd->xSwdClk, swd->xSwdIO, SWD_DELAY);
         bitWrite(buffer, x, value);
     }
-    swdDisplayPinout(xSwdIO, xSwdClk, buffer);
+    swdDisplayPinout(swd, buffer);
 }
 
 // Receive ACK response from SWD device & verify if OK
-bool swdReadAck(void)
+bool swdReadAck(struct swdScan_t *swd)
 {
     //bool bit1=swdReadBit();
-    bool bit1=swdReadBit(xSwdClk, xSwdIO, SWD_DELAY);
+    bool bit1=swdReadBit(swd->xSwdClk, swd->xSwdIO, SWD_DELAY);
     //bool bit2=swdReadBit();
-    bool bit2=swdReadBit(xSwdClk, xSwdIO, SWD_DELAY);
+    bool bit2=swdReadBit(swd->xSwdClk, swd->xSwdIO, SWD_DELAY);
     //bool bit3=swdReadBit();
-    bool bit3=swdReadBit(xSwdClk, xSwdIO, SWD_DELAY);
+    bool bit3=swdReadBit(swd->xSwdClk, swd->xSwdIO, SWD_DELAY);
     if(bit1 == true && bit2 == false && bit3 == false)
     {
         return true;
@@ -900,166 +897,167 @@ void swdWriteBit(uint xSwdIO, bool value, uint swd_delay)
 }
 #endif
 
-void swdWriteBits(long value, int length)
+void swdWriteBits(struct swdScan_t *swd, long value, int length)
 {
     for (int i=0; i<length; i++)
     {
-        swdWriteBit(xSwdIO, xSwdClk, bitRead(value, i), SWD_DELAY);
+        swdWriteBit(swd->xSwdIO, swd->xSwdClk, bitRead(value, i), SWD_DELAY);
     }
 }
 
-void swdResetLineSWDJ(void)
+void swdResetLineSWDJ(struct swdScan_t *swd)
 {
     //swdIOHigh();
-    swdIOHigh(xSwdIO);
+    swdIOHigh(swd->xSwdIO);
     for(int x=0; x < LINE_RESET_CLK_CYCLES+10; x++)
     {
         //swdClockPulse();
-        swdClockPulse(xSwdClk, SWD_DELAY);
+        swdClockPulse(swd->xSwdClk, SWD_DELAY);
     }
 }
 
-void swdResetLineSWD(void)
+void swdResetLineSWD(struct swdScan_t *swd)
 {
     //swdIOHigh();
-    swdIOHigh(xSwdIO);
+    swdIOHigh(swd->xSwdIO);
     for(int x=0; x < LINE_RESET_CLK_CYCLES+10; x++)
     {
         //swdClockPulse();
-        swdClockPulse(xSwdClk, SWD_DELAY);
+        swdClockPulse(swd->xSwdClk, SWD_DELAY);
     }
     //swdIOLow();
-    swdIOLow(xSwdIO);
+    swdIOLow(swd->xSwdIO);
     //swdClockPulse();
-    swdClockPulse(xSwdClk, SWD_DELAY);
+    swdClockPulse(swd->xSwdClk, SWD_DELAY);
     //swdClockPulse();
-    swdClockPulse(xSwdClk, SWD_DELAY);
+    swdClockPulse(swd->xSwdClk, SWD_DELAY);
     //swdClockPulse();
-    swdClockPulse(xSwdClk, SWD_DELAY);
+    swdClockPulse(swd->xSwdClk, SWD_DELAY);
     //swdClockPulse();
-    swdClockPulse(xSwdClk, SWD_DELAY);
+    swdClockPulse(swd->xSwdClk, SWD_DELAY);
     //swdIOHigh();
-    swdIOHigh(xSwdIO);    
+    swdIOHigh(swd->xSwdIO);    
 }
 
 // Leave dormant state
-void swdArmWakeUp(void)
+void swdArmWakeUp(struct swdScan_t *swd)
 {
     //swdSetWriteMode();
-    swdSetWriteMode(xSwdIO);
+    swdSetWriteMode(swd->xSwdIO);
     //swdIOHigh();
-    swdIOHigh(xSwdIO);
+    swdIOHigh(swd->xSwdIO);
     for(int x=0;x < 8; x++)     // Reset to selection Alert Sequence
     {
         //swdClockPulse();
-        swdClockPulse(xSwdClk, SWD_DELAY);
+        swdClockPulse(swd->xSwdClk, SWD_DELAY);
     }
 
     // Send selection alert sequence 0x19BC0EA2 E3DDAFE9 86852D95 6209F392 (128 bits)
-    swdWriteBits(0x92, 8);
-    swdWriteBits(0xf3, 8);
-    swdWriteBits(0x09, 8);
-    swdWriteBits(0x62, 8);
+    swdWriteBits(swd, 0x92, 8);
+    swdWriteBits(swd, 0xf3, 8);
+    swdWriteBits(swd, 0x09, 8);
+    swdWriteBits(swd, 0x62, 8);
 
-    swdWriteBits(0x95, 8);
-    swdWriteBits(0x2D, 8);
-    swdWriteBits(0x85, 8);
-    swdWriteBits(0x86, 8);
+    swdWriteBits(swd, 0x95, 8);
+    swdWriteBits(swd, 0x2D, 8);
+    swdWriteBits(swd, 0x85, 8);
+    swdWriteBits(swd, 0x86, 8);
 
-    swdWriteBits(0xE9, 8);
-    swdWriteBits(0xAF, 8);
-    swdWriteBits(0xDD, 8);
-    swdWriteBits(0xE3, 8);
+    swdWriteBits(swd, 0xE9, 8);
+    swdWriteBits(swd, 0xAF, 8);
+    swdWriteBits(swd, 0xDD, 8);
+    swdWriteBits(swd, 0xE3, 8);
 
-    swdWriteBits(0xA2, 8);
-    swdWriteBits(0x0E, 8);
-    swdWriteBits(0xBC, 8);
-    swdWriteBits(0x19, 8);
+    swdWriteBits(swd, 0xA2, 8);
+    swdWriteBits(swd, 0x0E, 8);
+    swdWriteBits(swd, 0xBC, 8);
+    swdWriteBits(swd, 0x19, 8);
 
-    swdWriteBits(0x00, 4);   // idle bits
-    swdWriteBits(SWDP_ACTIVATION_CODE, 8);
+    swdWriteBits(swd, 0x00, 4);   // idle bits
+    swdWriteBits(swd, SWDP_ACTIVATION_CODE, 8);
 }
 
-void swdToJTAG(void)
+void swdToJTAG(struct swdScan_t *swd)
 {
-  swdResetLineSWDJ();
-  swdWriteBits(SWD_TO_JTAG_CMD, 16);
+  swdResetLineSWDJ(swd);
+  swdWriteBits(swd, SWD_TO_JTAG_CMD, 16);
 }
 
-void swdTrySWDJ(void)
+bool swdTrySWDJ(struct swdScan_t *swd)
 {
     //swdSetWriteMode();
-    swdSetWriteMode(xSwdIO);
-    swdArmWakeUp();                     // Needed for devices like RPi Pico
-    swdResetLineSWDJ();
-    swdWriteBits(JTAG_TO_SWD_CMD, 16);
-    swdResetLineSWDJ();
-    swdWriteBits(0x00, 4);
+    swdSetWriteMode(swd->xSwdIO);
+    swdArmWakeUp(swd);                     // Needed for devices like RPi Pico
+    swdResetLineSWDJ(swd);
+    swdWriteBits(swd, JTAG_TO_SWD_CMD, 16);
+    swdResetLineSWDJ(swd);
+    swdWriteBits(swd, 0x00, 4);
 
-    swdWriteBits(0xA5, 8);             // readIdCode command 0b10100101
-    swdTurnAround();
+    swdWriteBits(swd, 0xA5, 8);             // readIdCode command 0b10100101
+    swdTurnAround(swd);
     
-    if(swdReadAck() == true)           // Got ACK OK
+    if(swdReadAck(swd) == true)           // Got ACK OK
     {
-        swdDeviceFound=true;
-        swdReadDPIDR();
+        swd->swdDeviceFound=true;
+        swdReadDPIDR(swd);
     }
-    swdTurnAround();
+    swdTurnAround(swd);
     //swdSetWriteMode();
-    swdSetWriteMode(xSwdIO);
-    swdWriteBits(0x00, 8);
+    swdSetWriteMode(swd->xSwdIO);
+    swdWriteBits(swd, 0x00, 8);
+    return(swd->swdDeviceFound);
 }
 
-bool swdBruteForce(void)
+bool swdBruteForce(struct swdScan_t *swd)
 {
     // onBoard LED notification
     //gpio_put(onboardLED, 1);
     onboardLEDset(1);
-    swdTrySWDJ();
+    bool result = swdTrySWDJ(swd);
     //gpio_put(onboardLED, 0);
     onboardLEDset(0);
-    if(swdDeviceFound)
+    if(result)
     { return(true); } else { return(false); }
 }
 
-bool swdScan(uint channelCount)
+bool swdScan(struct swdScan_t *swd)
 { 
-    
-    swdDeviceFound = false;
+    swd->swdDeviceFound = false;
     bool result = false;    
     //int channelCount = getSwdChannels();
-    progressCount = 0;
-    maxPermutations = channelCount * (channelCount - 1);
-    for(uint clkPin=startChannel; clkPin < (channelCount+startChannel); clkPin++)
+    swd->progressCount = 0;
+    swd->maxPermutations = swd->channelCount * (swd->channelCount - 1);
+    for(uint clkPin=startChannel; clkPin < (swd->channelCount+startChannel); clkPin++)
     {
-        xSwdClk = clkPin;
-        for(uint ioPin=startChannel; ioPin < (channelCount+startChannel); ioPin++)
+        swd->xSwdClk = clkPin;
+        for(uint ioPin=startChannel; ioPin < (swd->channelCount+startChannel); ioPin++)
         {
-            xSwdIO = ioPin;
-            if( xSwdClk == xSwdIO)
+            swd->xSwdIO = ioPin;
+            if( swd->xSwdClk == swd->xSwdIO)
             {
                 continue;
             }
-            printProgress(progressCount, maxPermutations);
-            progressCount++;
-            initSwdPins(xSwdClk, xSwdIO);
-            result = swdBruteForce();
+            printProgress(swd->progressCount, swd->maxPermutations);
+            swd->progressCount++;
+            initSwdPins(swd->xSwdClk, swd->xSwdIO);
+            result = swdBruteForce(swd);
             if (result) break;
         }
         if (result) break; 
     }
 
     // Switch back to JTAG
-    swdToJTAG();
+    swdToJTAG(swd);
 
     // return success or fail
-    return swdDeviceFound;
+    return result;
 }
 
 //--------------------------------------------Main--------------------------------------------------
 
 static int main()
 {
+    char cmd;
     stdio_init_all();
 
     // GPIO init
@@ -1098,8 +1096,10 @@ static int main()
                 }
                 break;
 
-            case 's':               
-                if(!swdScan(getSwdChannels()))
+            case 's': 
+                struct swdScan_t swd;
+                swd.channelCount = getSwdChannels();              
+                if(!swdScan(&swd))
                 {
                     printProgress(maxPermutations, maxPermutations);
                     printf("\n\n");
@@ -1147,7 +1147,7 @@ void bluetag_jPulsePins_set(bool jPulsePins)
     jPulsePins = jPulsePins;
 }
 
-void bluetag_progressbar_cleanup(void)
+void bluetag_progressbar_cleanup(struct swdScan_t *swd)
 {
-    printProgress(maxPermutations, maxPermutations);
+    printProgress(swd->maxPermutations, swd->maxPermutations);
 }
