@@ -9,7 +9,7 @@ extern char *version;
 // Function that sets all used channels to output high
 static inline void setPinsHigh(uint startChannel, uint channelCount)
 {
-    for(int x = startChannel; x < channelCount; x++)
+    for(int x = startChannel; x < (channelCount+startChannel); x++)
     {
         gpio_put(x, 1);
     }
@@ -17,7 +17,7 @@ static inline void setPinsHigh(uint startChannel, uint channelCount)
 
 static inline void setPinsLoW(uint startChannel, uint channelCount)
 {
-    for(int x = startChannel; x < channelCount; x++)
+    for(int x = startChannel; x < (channelCount+startChannel); x++)
     {
         gpio_put(x, 0);
     }
@@ -27,7 +27,7 @@ static inline void setPinsLoW(uint startChannel, uint channelCount)
 // Initialize all available channels & set them as output
 static inline void initChannels(uint startChannel, uint maxChannels)
 {
-    for(int x=startChannel; x < maxChannels ; x++)
+    for(int x=startChannel; x < (maxChannels+startChannel) ; x++)
     {
         gpio_init(x);
         gpio_set_dir(x, GPIO_OUT);

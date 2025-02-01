@@ -1031,10 +1031,10 @@ bool swdScan(uint channelCount)
     //int channelCount = getSwdChannels();
     progressCount = 0;
     maxPermutations = channelCount * (channelCount - 1);
-    for(uint clkPin=startChannel; clkPin < channelCount; clkPin++)
+    for(uint clkPin=startChannel; clkPin < (channelCount+startChannel); clkPin++)
     {
         xSwdClk = clkPin;
-        for(uint ioPin=startChannel; ioPin < channelCount; ioPin++)
+        for(uint ioPin=startChannel; ioPin < (channelCount+startChannel); ioPin++)
         {
             xSwdIO = ioPin;
             if( xSwdClk == xSwdIO)
