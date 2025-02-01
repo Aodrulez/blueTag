@@ -1,3 +1,6 @@
+#include "pirate.h"
+#include "pirate/bio.h"
+
 void bluetag_jPulsePins_set(bool jPulsePins);
 void bluetag_progressbar_cleanup(void);
 bool jtagScan(uint channelCount);
@@ -91,8 +94,10 @@ static inline void trstLow(uint jTRST)
 
 static inline void initSwdPins(uint xSwdClk, uint xSwdIO)
 {
-    gpio_set_dir(xSwdClk,GPIO_OUT);
-    gpio_set_dir(xSwdIO,GPIO_OUT);
+    //gpio_set_dir(xSwdClk,GPIO_OUT);
+    bio_output(gpio2bio(xSwdClk));
+    //gpio_set_dir(xSwdIO,GPIO_OUT);
+    bio_output(gpio2bio(xSwdIO));
 }
 
 static inline void swdClockPulse(uint xSwdClk, uint swd_delay)
@@ -105,12 +110,14 @@ static inline void swdClockPulse(uint xSwdClk, uint swd_delay)
 
 static inline void swdSetReadMode(uint xSwdIO)
 {
-    gpio_set_dir(xSwdIO,GPIO_IN);
+    //gpio_set_dir(xSwdIO,GPIO_IN);
+    bio_input(gpio2bio(xSwdIO));
 }
 
 static inline void swdSetWriteMode(uint xSwdIO)
 {
-    gpio_set_dir(xSwdIO,GPIO_OUT);
+    //gpio_set_dir(xSwdIO,GPIO_OUT);
+    bio_output(gpio2bio(xSwdIO));
 }
 
 static inline void swdIOHigh(uint xSwdIO)

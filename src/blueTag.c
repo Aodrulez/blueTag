@@ -14,7 +14,6 @@
 
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "pirate.h"
 #include "blueTag.h"
 
 const char *banner=R"banner(
@@ -43,8 +42,8 @@ const uint onboardLED = ONBOARD_LED;
 #endif
 const uint unusedGPIO = 28;                               // Pins on Pico are accessed using GPIO names
 const uint MAX_NUM_JTAG  = 32;
-const uint startChannel = 0;                                // First GPIO pin to use 0 - 16 by default
-const uint maxChannels = 16;                               // Max number of channels supported by Pico  
+const uint startChannel = 8;                                // First GPIO pin to use 0 - 16 by default
+const uint maxChannels = 8;                               // Max number of channels supported by Pico  
 uint progressCount = 0;
 uint maxPermutations = 0;
 char cmd;
