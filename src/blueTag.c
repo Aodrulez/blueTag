@@ -27,6 +27,7 @@ const char *banner=R"banner(
 
 
 char *version="1.0.2";
+#if 0
 #define  MAX_DEVICES_LEN    32                             // Maximum number of devices allowed in a single JTAG chain
 #define  MIN_IR_LEN          2                             // Minimum length of instruction register per IEEE Std. 1149.1
 #define  MAX_IR_LEN         32                             // Maximum length of instruction register
@@ -36,17 +37,19 @@ char *version="1.0.2";
 #define CR		    13
 #define LF		    10
 //#define ONBOARD_LED 25 //if not defined, onboard LED will not be used
+#endif 
 
+#if 0
 #ifdef ONBOARD_LED
 const uint onboardLED = ONBOARD_LED;
 #endif
 const uint unusedGPIO = 28;                               // Pins on Pico are accessed using GPIO names
 const uint MAX_NUM_JTAG  = 32;
+#endif
 const uint startChannel = 8;                                // First GPIO pin to use 0 - 16 by default
 const uint maxChannels = 8;                               // Max number of channels supported by Pico  
 uint progressCount = 0;
 uint maxPermutations = 0;
-
 
 uint jTDI;           
 uint jTDO;
@@ -74,15 +77,15 @@ long int strtol(const char *str, char **endptr, int base);
 void onboardLEDset(bool state)
 {
     #ifdef ONBOARD_LED
-    gpio_put(onboardLED, state);
+    gpio_put(ONBOARD_LED, state);
     #endif
 }
 
 void onboardLEDinit(void)
 {
     #ifdef ONBOARD_LED
-    gpio_init(onboardLED);
-    gpio_set_dir(onboardLED, GPIO_OUT);
+    gpio_init(ONBOARD_LED);
+    gpio_set_dir(ONBOARD_LED, GPIO_OUT);
     #endif
 }
 
@@ -632,22 +635,22 @@ bool jtagScan(uint channelCount)
     maxPermutations = calculateJtagPermutations(channelCount);
     jTDO, jTCK, jTMS, jTDI,jTRST = 0;
     resetPins(startChannel, channelCount);
-    for(jTDI=startChannel; jTDI<channelCount; jTDI++)
+    for(jTDI=startChannel; jTDI<(channelCount+startChannel); jTDI++)
     {
-        for(jTDO=startChannel; jTDO < channelCount; jTDO++)
+        for(jTDO=startChannel; jTDO < (channelCount+startChannel); jTDO++)
         {
             if (jTDI == jTDO)
             {
                 continue;
             }
-            for(jTCK =startChannel; jTCK  < channelCount; jTCK++)
+            for(jTCK =startChannel; jTCK  < (channelCount+startChannel); jTCK++)
             {
                 if (jTCK  == jTDO || jTCK == jTDI)
                 {
                     continue;
                 }
-                for(jTMS=startChannel; jTMS < channelCount; jTMS++)
-                {                      
+                for(jTMS=startChannel; jTMS < (channelCount+startChannel); jTMS++)
+                {                 
                         if (jTMS == jTCK || jTMS == jTDO || jTMS == jTDI)
                         {
                             continue;
@@ -690,7 +693,7 @@ bool jtagScan(uint channelCount)
                             xTCK=jTCK;
                             xTMS=jTMS;
                             xTRST=0;
-                            for(jTRST=startChannel; jTRST < channelCount; jTRST++)
+                            for(jTRST=startChannel; jTRST < (channelCount+startChannel); jTRST++)
                             {
                                 if (jTRST == jTMS || jTRST == jTCK || jTRST == jTDO || jTRST == jTDI)
                                 {
@@ -1147,7 +1150,7 @@ void bluetag_jPulsePins_set(bool jPulsePins)
     jPulsePins = jPulsePins;
 }
 
-void bluetag_progressbar_cleanup(struct swdScan_t *swd)
+void bluetag_progressbar_cleanup(uint maxPermutations)
 {
-    printProgress(swd->maxPermutations, swd->maxPermutations);
+    printProgress(maxPermutations, maxPermutations);
 }
