@@ -1,4 +1,36 @@
+#define  MAX_DEVICES_LEN    32                             // Maximum number of devices allowed in a single JTAG chain
+#define  MIN_IR_LEN          2                             // Minimum length of instruction register per IEEE Std. 1149.1
+#define  MAX_IR_LEN         32                             // Maximum length of instruction register
+#define  MAX_IR_CHAIN_LEN   MAX_DEVICES_LEN * MAX_IR_LEN   // Maximum total length of JTAG chain w/ IR selected
+#define  MAX_DR_LEN         4096                           // Maximum length of data register
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof(*array))
+#define CR		    13
+#define LF		    10
+//#define ONBOARD_LED 25 // If not defined, onboard LED will not be used
+#define UNUSED_GPIO 28 // Unused in source
+#define MAX_NUM_JTAG 32 // Unused in source
+#define START_CHANNEL 0 // First GPIO pin to use 0 - 16 by default
+#define MAX_CHANNELS 16 // Max number of channels supported by Pico  (upto 16 on a bare board)
 
+struct jtagScan_t
+{
+    bool jPulsePins;
+    uint jTDI;           
+    uint jTDO;
+    uint jTCK;
+    uint jTMS;
+    uint jTRST;
+    uint xTDI;           
+    uint xTDO;
+    uint xTCK;
+    uint xTMS;
+    uint xTRST;
+    uint channelCount;
+    uint progressCount;
+    uint maxPermutations;
+    uint jDeviceCount;
+    uint32_t deviceIDs[MAX_DEVICES_LEN]; // Array to store identified device IDs
+};
 
 
 struct swdScan_t
@@ -12,7 +44,7 @@ struct swdScan_t
 };
 
 void bluetag_jPulsePins_set(bool jPulsePins);
-void bluetag_progressbar_cleanup(struct swdScan_t *swd);
+void bluetag_progressbar_cleanup(uint maxPermutations);
 bool jtagScan(uint channelCount);
 bool swdScan(struct swdScan_t *swd);
 extern char *version;
