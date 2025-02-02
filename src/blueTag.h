@@ -7,13 +7,14 @@
 #define CR		    13
 #define LF		    10
 //#define ONBOARD_LED 25 // If not defined, onboard LED will not be used
-#define UNUSED_GPIO 28 // Unused in source
-#define MAX_NUM_JTAG 32 // Unused in source
-#define START_CHANNEL 0 // First GPIO pin to use 0 - 16 by default
-#define MAX_CHANNELS 16 // Max number of channels supported by Pico  (upto 16 on a bare board)
+#define BTAG_UNUSED_GPIO 28 // Unused in source
+#define BTAG_MAX_NUM_JTAG 32 // Unused in source
+#define BTAG_START_CHANNEL 0 // First GPIO pin to use 0 - 16 by default
+#define BTAG_MAX_CHANNELS 16 // Max number of channels supported by Pico  (upto 16 on a bare board)
 
 struct jtagScan_t
 {
+    bool volatile foundPinout;
     bool jPulsePins;
     uint jTDI;           
     uint jTDO;
@@ -45,7 +46,7 @@ struct swdScan_t
 
 void bluetag_jPulsePins_set(bool jPulsePins);
 void bluetag_progressbar_cleanup(uint maxPermutations);
-bool jtagScan(uint channelCount);
+bool jtagScan(struct jtagScan_t *jtag);
 bool swdScan(struct swdScan_t *swd);
 extern char *version;
 
