@@ -85,19 +85,24 @@ static inline void initChannels(uint startChannel, uint maxChannels)
     for(int x=startChannel; x < (maxChannels+startChannel) ; x++)
     {
         gpio_init(x);
-        gpio_set_dir(x, GPIO_OUT);
+        //gpio_set_dir(x, GPIO_OUT);
+        bio_output(gpio2bio(x));
     }   
 }
 
 static inline void jtagConfig(uint tdiPin, uint tdoPin, uint tckPin, uint tmsPin)
 {
     // Output
-    gpio_set_dir(tdiPin, GPIO_OUT);
-    gpio_set_dir(tckPin, GPIO_OUT);
-    gpio_set_dir(tmsPin, GPIO_OUT);
+    //gpio_set_dir(tdiPin, GPIO_OUT);
+    bio_output(gpio2bio(tdiPin));
+    //gpio_set_dir(tckPin, GPIO_OUT);
+    bio_output(gpio2bio(tckPin));
+    //gpio_set_dir(tmsPin, GPIO_OUT);
+    bio_output(gpio2bio(tmsPin));
 
     // Input
-    gpio_set_dir(tdoPin, GPIO_IN);
+    //gpio_set_dir(tdoPin, GPIO_IN);
+    bio_input(gpio2bio(tdoPin));
     gpio_put(tckPin, 0);
 }
 
