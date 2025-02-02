@@ -1,3 +1,6 @@
+#include "pirate.h"
+#include "pirate/bio.h"
+
 #define  MAX_DEVICES_LEN    32                             // Maximum number of devices allowed in a single JTAG chain
 #define  MIN_IR_LEN          2                             // Minimum length of instruction register per IEEE Std. 1149.1
 #define  MAX_IR_LEN         32                             // Maximum length of instruction register

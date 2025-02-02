@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
 
 # Include build functions from Pico SDK
-include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
+set(PICO_SDK_PATH "~/pico-sdk")
+include(pico_sdk_import.cmake)
 
 # Set name of project (as PROJECT_NAME) and C/C   standards
 project(blueTag C CXX ASM)
@@ -14,6 +15,7 @@ pico_sdk_init()
 # Tell CMake where to find the executable source file
 add_executable(${PROJECT_NAME} 
     blueTag.c 
+    blueTag.h
 )
 
 # Create map/bin/hex/uf2 files
