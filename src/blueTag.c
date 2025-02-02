@@ -192,12 +192,12 @@ int getIntFromSerial(void)
     return(value);
 }
 
-int getChannels(void)
+uint getChannels(uint minChannels, uint maxChannels)
 {
-    int x;
-    printf("     Enter number of channels hooked up (Min 4, Max %d): ", maxChannels);
+    uint x;
+    printf("     Enter number of channels hooked up (Min %d, Max %d): ", minChannels, maxChannels);
     x = getIntFromSerial();
-    while(x < 4 || x > maxChannels)
+    while(x < minChannels || x > maxChannels)
     {
         printf("     Enter a valid value: ");
         x = getIntFromSerial();       
@@ -766,20 +766,6 @@ bool jtagScan(struct jtagScan_t *jtag)
 #define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
 #define bitWrite(value, bit, bitvalue) ((bitvalue) ? bitSet(value, bit) : bitClear(value, bit))
 
-int getSwdChannels(void)
-{
-    char x;
-    printf("     Enter number of channels hooked up (Min 2, Max %d): ", maxChannels);
-    x = getIntFromSerial();
-    while(x < 2 || x > maxChannels)
-    {
-        printf("     Enter a valid value: ");
-        x = getIntFromSerial();
-    }
-    printf("     Number of channels set to: %d\n\n",x);
-    return(x);
-}
-
 void swdDisplayDeviceDetails(uint32_t idcode)
 {
         printf("     [ Device 0 ]  0x%08X ",  idcode);
@@ -1100,7 +1086,7 @@ int main()
 
             case 'j':
                 struct jtagScan_t jtag;
-                jtag.channelCount = getChannels();
+                jtag.channelCount = getChannels(4, maxChannels);
                 jtag.jPulsePins = jPulsePins;
                 if(!jtagScan(&jtag))
                 {
@@ -1112,7 +1098,7 @@ int main()
 
             case 's': 
                 struct swdScan_t swd;
-                swd.channelCount = getSwdChannels();              
+                swd.channelCount = getChannels(2, maxChannels);              
                 if(!swdScan(&swd))
                 {
                     printProgress(swd.maxPermutations, swd.maxPermutations);
