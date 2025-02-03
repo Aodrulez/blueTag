@@ -14,6 +14,7 @@
 
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "blueTag.h"
 
 const char *banner=R"banner(
              _______ ___     __   __ _______ _______ _______ _______ 
@@ -26,38 +27,13 @@ const char *banner=R"banner(
 
 
 char *version="1.0.2";
-#define  MAX_DEVICES_LEN    32                             // Maximum number of devices allowed in a single JTAG chain
-#define  MIN_IR_LEN          2                             // Minimum length of instruction register per IEEE Std. 1149.1
-#define  MAX_IR_LEN         32                             // Maximum length of instruction register
-#define  MAX_IR_CHAIN_LEN   MAX_DEVICES_LEN * MAX_IR_LEN   // Maximum total length of JTAG chain w/ IR selected
-#define  MAX_DR_LEN         4096                           // Maximum length of data register
-#define ARRAY_SIZE(array) (sizeof(array) / sizeof(*array))
-#define CR		    13
-#define LF		    10
 
-const uint onboardLED = 25;
+#ifdef ONBOARD_LED
+const uint onboardLED = ONBOARD_LED;
+#endif
 const uint unusedGPIO = 28;                               // Pins on Pico are accessed using GPIO names
-const uint MAX_NUM_JTAG  = 32;
-const uint maxChannels = 16;                               // Max number of channels supported by Pico  
-uint progressCount = 0;
-uint maxPermutations = 0;
-char cmd;
-
-uint jTDI;           
-uint jTDO;
-uint jTCK;
-uint jTMS;
-uint jTRST;
-uint jDeviceCount;
-bool jPulsePins;
-uint32_t deviceIDs[MAX_DEVICES_LEN];                         // Array to store identified device IDs
-
-uint xTDI;           
-uint xTDO;
-uint xTCK;
-uint xTMS;
-uint xTRST;
-
+const uint startChannel = BTAG_START_CHANNEL;              // First GPIO pin to use 0 - 16 by default
+const uint maxChannels = BTAG_MAX_CHANNELS;               // Max number of channels supported by Pico  
 
 // include file from openocd/src/helper
 static const char * const jep106[][126] = {
@@ -65,6 +41,21 @@ static const char * const jep106[][126] = {
 };
 
 long int strtol(const char *str, char **endptr, int base);
+
+void onboardLedSet(bool state)
+{
+    #ifdef ONBOARD_LED
+    gpio_put(ONBOARD_LED, state);
+    #endif
+}
+
+void onboardLedInit(void)
+{
+    #ifdef ONBOARD_LED
+    gpio_init(ONBOARD_LED);
+    gpio_set_dir(ONBOARD_LED, GPIO_OUT);
+    #endif
+}
 
 void splashScreen(void)
 {
@@ -168,12 +159,12 @@ int getIntFromSerial(void)
     return(value);
 }
 
-int getChannels(void)
+uint getChannels(uint minChannels, uint maxChannels)
 {
-    int x;
-    printf("     Enter number of channels hooked up (Min 4, Max %d): ", maxChannels);
+    uint x;
+    printf("     Enter number of channels hooked up (Min %d, Max %d): ", minChannels, maxChannels);
     x = getIntFromSerial();
-    while(x < 4 || x > maxChannels)
+    while(x < minChannels || x > maxChannels)
     {
         printf("     Enter a valid value: ");
         x = getIntFromSerial();       
@@ -183,134 +174,73 @@ int getChannels(void)
 }
 
 // Function that sets all used channels to output high
-void setPinsHigh(int channelCount)
+static inline void resetPins(uint startChannel, uint channelCount)
 {
-    for(int x = 0; x < channelCount; x++)
-    {
-        gpio_put(x, 1);
-    }
-}
-
-// Function that sets all used channels to output high
-void setPinsLoW(int channelCount)
-{
-    for(int x = 0; x < channelCount; x++)
-    {
-        gpio_put(x, 0);
-    }
-}
-
-// Function that sets all used channels to output high
-void resetPins(int channelCount)
-{
-    setPinsHigh(channelCount);
+    setPinsHigh(startChannel, channelCount);
     sleep_ms(5);
-    setPinsLoW(channelCount);
+    setPinsLoW(startChannel, channelCount);
     sleep_ms(5);
-    setPinsHigh(channelCount);
+    setPinsHigh(startChannel, channelCount);
     sleep_ms(5);
 }
 
-void pulsePins(int channelCount)
+void pulsePins(uint startChannel, uint channelCount)
 {
-    setPinsLoW(channelCount);
+    setPinsLoW(startChannel, channelCount);
     sleep_ms(2);
-    setPinsHigh(channelCount);
+    setPinsHigh(startChannel, channelCount);
     sleep_ms(2);
-}
-
-// Initialize all available channels & set them as output
-void initChannels(void)
-{
-    for(int x=0; x < maxChannels ; x++)
-    {
-        gpio_init(x);
-        gpio_set_dir(x, GPIO_OUT);
-    }   
-}
-
-void jtagConfig(uint tdiPin, uint tdoPin, uint tckPin, uint tmsPin)
-{
-    // Output
-    gpio_set_dir(tdiPin, GPIO_OUT);
-    gpio_set_dir(tckPin, GPIO_OUT);
-    gpio_set_dir(tmsPin, GPIO_OUT);
-
-    // Input
-    gpio_set_dir(tdoPin, GPIO_IN);
-    gpio_put(tckPin, 0);
-}
-
-// Generate one TCK pulse. Read TDO inside the pulse.
-// Expects TCK to be low upon being called.
-bool tdoRead(void)
-{
-    bool volatile tdoStatus;
-    gpio_put(jTCK, 1);
-    tdoStatus=gpio_get(jTDO);
-    gpio_put(jTCK, 0);
-    return(tdoStatus);
 }
 
 // Generates on TCK Pulse
 // Expects TCK to be low when called & ignores TDO
-void tckPulse(void)
+void tckPulse(struct jtagScan_t *jtag)
 {
     bool tdoStatus;
-    tdoStatus=tdoRead();
+    //tdoStatus=tdoRead();
+    tdoStatus=tdoRead(jtag->jTCK, jtag->jTDO);
 }
 
-void tdiHigh(void)
+void restoreIdle(struct jtagScan_t *jtag)
 {
-    gpio_put(jTDI, 1);
-}
-
-void tdiLow(void)
-{
-    gpio_put(jTDI, 0);
-}
-
-void tmsHigh(void)
-{
-    gpio_put(jTMS, 1);
-}
-
-void tmsLow(void)
-{
-    gpio_put(jTMS, 0);
-}
-
-void restoreIdle(void)
-{
-    tmsHigh();
+    //tmsHigh();
+    tmsHigh(jtag->jTMS);
     for(int x=0; x < 5; x++)    // 5 is sufficient, adding few more to be sure
     {
-        tckPulse();
+        tckPulse(jtag);
     }
-    tmsLow();
-    tckPulse();                 // Got to Run-Test-Idle
+    //tmsLow();
+    tmsLow(jtag->jTMS);
+    tckPulse(jtag);                 // Got to Run-Test-Idle
 }
 
-void enterShiftDR(void)
+void enterShiftDR(struct jtagScan_t *jtag)
 {
-    tmsHigh();
-    tckPulse();                 // Go to Select DR
-    tmsLow();
-    tckPulse();                 // Go to Capture DR
-    tmsLow();
-    tckPulse();                 // Go to Shift DR
+    //tmsHigh();
+    tmsHigh(jtag->jTMS);
+    tckPulse(jtag);                 // Go to Select DR
+    //tmsLow();
+    tmsLow(jtag->jTMS);
+    tckPulse(jtag);                 // Go to Capture DR
+    //tmsLow();
+    tmsLow(jtag->jTMS);
+    tckPulse(jtag);                 // Go to Shift DR
 }
 
-void enterShiftIR(void)
+void enterShiftIR(struct jtagScan_t *jtag)
 {
-    tmsHigh();
-    tckPulse();                 // Go to Select DR
-    tmsHigh();
-    tckPulse();                 // Go to Select IR
-    tmsLow();
-    tckPulse();                 // Go to Capture IR
-    tmsLow();
-    tckPulse();                 // Go to Shift IR
+    //tmsHigh();
+    tmsHigh(jtag->jTMS);
+    tckPulse(jtag);                 // Go to Select DR
+    //tmsHigh();
+    tmsHigh(jtag->jTMS);
+    tckPulse(jtag);                 // Go to Select IR
+    //tmsLow();
+    tmsLow(jtag->jTMS);
+    tckPulse(jtag);                 // Go to Capture IR
+    //tmsLow(jtag);
+    tmsLow(jtag->jTMS);
+    tckPulse(jtag);                 // Go to Shift IR
 }
 
 uint32_t bitReverse(uint32_t n)
@@ -324,13 +254,15 @@ uint32_t bitReverse(uint32_t n)
     return reversed;
 }
 
-void getDeviceIDs(int number)
+void getDeviceIDs(struct jtagScan_t *jtag, int number)
 {
-    restoreIdle();              // Reset TAP to Run-Test-Idle
-    enterShiftDR();             // Go to Shift DR
+    restoreIdle(jtag);              // Reset TAP to Run-Test-Idle
+    enterShiftDR(jtag);             // Go to Shift DR
 
-    tdiHigh();
-    tmsLow();
+    //tdiHigh();
+    tdiHigh(jtag->jTDI);
+    //tmsLow();
+    tmsLow(jtag->jTMS);
     uint32_t tempValue;
     for(int x=0; x < number;x++)
     {  
@@ -338,30 +270,31 @@ void getDeviceIDs(int number)
         for(int y=0; y<32; y++)
         {
             tempValue <<= 1;
-            tempValue |= tdoRead();
+            //tempValue |= tdoRead();
+            tempValue |= tdoRead(jtag->jTCK, jtag->jTDO);
         }
         tempValue = bitReverse(tempValue);
-        deviceIDs[x]=tempValue;
+        jtag->deviceIDs[x]=tempValue;
     }
 
-    restoreIdle();              // Reset TAP to Run-Test-Idle
+    restoreIdle(jtag);              // Reset TAP to Run-Test-Idle
 }
 
-void displayPinout(void)
+void displayPinout(struct jtagScan_t *jtag)
 {
-    printProgress(maxPermutations, maxPermutations);
-    printf("\n\n");
-    printf("     [  Pinout  ]  TDI=CH%d", xTDI);
-    printf(" TDO=CH%d", xTDO);
-    printf(" TCK=CH%d", xTCK);
-    printf(" TMS=CH%d", xTMS);
-    if(xTRST != 0)
+    printProgress(jtag->maxPermutations, jtag->maxPermutations);
+    printf("%s%s", BTAG_EOL, BTAG_EOL);
+    printf("     [  Pinout  ]  TDI=IO%d", jtag->xTDI-8);
+    printf(" TDO=IO%d", jtag->xTDO-8);
+    printf(" TCK=IO%d", jtag->xTCK-8);
+    printf(" TMS=IO%d", jtag->xTMS-8);
+    if(jtag->xTRST != 0)
     {
-        printf(" TRST=CH%d \n\n", xTRST);
+        printf(" TRST=IO%d %s%s", jtag->xTRST-8, BTAG_EOL, BTAG_EOL);
     }
     else
     {
-        printf(" TRST=N/A \n\n");
+        printf(" TRST=N/A %s%s", BTAG_EOL, BTAG_EOL);
     }
 }
 
@@ -392,12 +325,12 @@ bool isValidDeviceID(uint32_t idc)
     return(false);
 }
 
-void displayDeviceDetails(void)
+void displayDeviceDetails(struct jtagScan_t *jtag)
 {
-    for(int x=0; x < jDeviceCount; x++)
+    for(int x=0; x < jtag->jDeviceCount; x++)
     {
-        printf("     [ Device %d ]  0x%08X ", x, deviceIDs[x]);
-        uint32_t idc = deviceIDs[x];
+        uint32_t idc = jtag->deviceIDs[x];
+        printf("     [ Device %d ]  0x%08X ", x, idc);
         long part = (idc & 0xffff000) >> 12;
         int bank=(idc & 0xf00) >> 8;
         int id=(idc & 0xfe) >> 1;
@@ -405,51 +338,59 @@ void displayDeviceDetails(void)
 
         if (id > 1 && id <= 126 && bank <= 8) 
         {
-            printf("(mfg: '%s' , part: 0x%x, ver: 0x%x)\n",jep106_table_manufacturer(bank,id), part, ver);
+            printf("(mfg: '%s', part: 0x%x, ver: 0x%x)%s",jep106_table_manufacturer(bank,id), part, ver, BTAG_EOL);
         }
     }
     printf("\n");
 }
 
 // Function to detect number of devices in the scan chain 
-int detectDevices(void)
+int detectDevices(struct jtagScan_t *jtag)
 {
     int volatile x;
-    restoreIdle();
-    enterShiftIR();
+    restoreIdle(jtag);
+    enterShiftIR(jtag);
 
-    tdiHigh();
+    //tdiHigh();
+    tdiHigh(jtag->jTDI);
     for(x = 0; x < MAX_IR_CHAIN_LEN; x++)
     {
-        tckPulse();
+        tckPulse(jtag);
     }
 
-    tmsHigh();
-    tckPulse();     //Go to Exit1 IR
+    //tmsHigh();
+    tmsHigh(jtag->jTMS);
+    tckPulse(jtag);     //Go to Exit1 IR
 
-    tmsHigh();
-    tckPulse();     //Go to Update IR, new instruction in effect
+    //tmsHigh();
+    tmsHigh(jtag->jTMS);
+    tckPulse(jtag);     //Go to Update IR, new instruction in effect
 
-    tmsHigh();
-    tckPulse();     //Go to Select DR
+    //tmsHigh();
+    tmsHigh(jtag->jTMS);
+    tckPulse(jtag);     //Go to Select DR
 
-    tmsLow();
-    tckPulse();     //Go to Capture DR
+    //tmsLow();
+    tmsLow(jtag->jTMS);
+    tckPulse(jtag);     //Go to Capture DR
 
-    tmsLow();
-    tckPulse();     //Go to Shift DR
+    //tmsLow();
+    tmsLow(jtag->jTMS);
+    tckPulse(jtag);     //Go to Shift DR
 
     for(x = 0; x < MAX_DEVICES_LEN; x++)
     {
-        tckPulse();
+        tckPulse(jtag);
     }
 
     // We are now in BYPASS mode with all DR set
     // Send in a 0 on TDI and count until we see it on TDO
-    tdiLow();
+    //tdiLow();
+    tdiLow(jtag->jTDI);
     for(x = 0; x < (MAX_DEVICES_LEN - 1); x++)
     {
-        if(tdoRead() == false)
+        //if(tdoRead() == false)
+        if(tdoRead(jtag->jTCK, jtag->jTDO) == false)
         {
             break;                      // Our 0 has propagated through the entire chain
                                         // 'x' holds the number of devices
@@ -461,16 +402,19 @@ int detectDevices(void)
         x = 0;
     }
     
-    tmsHigh();
-    tckPulse();
-    tmsHigh();
-    tckPulse();
-    tmsLow();
-    tckPulse();                         // Go to Run-Test-Idle
+    //tmsHigh();
+    tmsHigh(jtag->jTMS);
+    tckPulse(jtag);
+    //tmsHigh();
+    tmsHigh(jtag->jTMS);
+    tckPulse(jtag);
+    //tmsLow();
+    tmsLow(jtag->jTMS);
+    tckPulse(jtag);                         // Go to Run-Test-Idle
     return(x);
 }
 
-uint32_t shiftArray(uint32_t array, int numBits)
+uint32_t shiftArray(struct jtagScan_t *jtag, uint32_t array, int numBits)
 {
     uint32_t tempData;
     int x;
@@ -480,38 +424,45 @@ uint32_t shiftArray(uint32_t array, int numBits)
     {
         if( x == numBits)
         {
-          tmsHigh();
+          //tmsHigh();
+          tmsHigh(jtag->jTMS);
         }  
 
         if (array & 1)
-            {tdiHigh();}
+            //{tdiHigh();}
+            {tdiHigh(jtag->jTDI);}
         else
-            {tdiLow();}
+            //{tdiLow();}
+            {tdiLow(jtag->jTDI);}
 
         array >>= 1 ;
         tempData <<= 1;
-        tempData |=tdoRead();
+        //tempData |=tdoRead();
+        tempData |=tdoRead(jtag->jTCK, jtag->jTDO);
     }
     return(tempData);
 }
 
-uint32_t sendData(uint32_t pattern, int num)
+uint32_t sendData(struct jtagScan_t *jtag, uint32_t pattern, int num)
 {
     uint32_t tempData;
     tempData=0;
-    enterShiftDR();
-    tempData=shiftArray(pattern, num);
-    tmsHigh();
-    tckPulse();             // Go to Update DR, new data in effect
+    enterShiftDR(jtag);
+    tempData=shiftArray(jtag, pattern, num);
+    //tmsHigh();
+    tmsHigh(jtag->jTMS);
+    tckPulse(jtag);             // Go to Update DR, new data in effect
 
-    tmsLow();
-    tckPulse();             // Go to Run-Test-Idle
+    //tmsLow();
+    tmsLow(jtag->jTMS);
+    tckPulse(jtag);             // Go to Run-Test-Idle
     
     return(tempData);
 }
 
-uint32_t bypassTest(int num, uint32_t bPattern)
+uint32_t bypassTest(struct jtagScan_t *jtag, uint32_t bPattern)
 {
+    int num = jtag->jDeviceCount;
     if(num <= 0 || num > MAX_DEVICES_LEN)   // Discard false-positives
     {
         return(0);
@@ -519,25 +470,29 @@ uint32_t bypassTest(int num, uint32_t bPattern)
 
     int x;
     uint32_t value;
-    restoreIdle();
-    enterShiftIR();
+    restoreIdle(jtag);
+    enterShiftIR(jtag);
 
-    tdiHigh();
+    //tdiHigh();
+    tdiHigh(jtag->jTDI);
     for(x=0; x < (num * MAX_IR_LEN); x++)      // Send in 1s
     {
-        tckPulse();
+        tckPulse(jtag);
     }
 
-    tmsHigh();
-    tckPulse();               // Go to Exit1 IR
+    //tmsHigh();
+    tmsHigh(jtag->jTMS);
+    tckPulse(jtag);               // Go to Exit1 IR
 
-    tmsHigh();
-    tckPulse();              // Go to Update IR, new instruction in effect
+    //tmsHigh();
+    tmsHigh(jtag->jTMS);
+    tckPulse(jtag);              // Go to Update IR, new instruction in effect
 
-    tmsLow();
-    tckPulse();              // Go to Run-Test-Idle       
+    //tmsLow();
+    tmsLow(jtag->jTMS);
+    tckPulse(jtag);              // Go to Run-Test-Idle       
 
-    value=sendData(bPattern, 32 + num); // This is correct, verified.
+    value=sendData(jtag, bPattern, 32 + num); // This is correct, verified.
     value=bitReverse(value);
     return(value);
 
@@ -554,7 +509,7 @@ uint32_t uint32Rand(void)
   return (Z);
 }
 
-int calculateJtagPermutations(int totalChannels) 
+int calculateJtagPermutations(uint totalChannels) 
 {
     int result = 1;
     for (int i = 0; i < 4; i++)             // Minimum required pins == 4
@@ -564,123 +519,129 @@ int calculateJtagPermutations(int totalChannels)
     return result;
 }
 
-void jtagScan(void)
+bool jtagScan(struct jtagScan_t *jtag)
 {
-    int channelCount;
+    //int channelCount;
     uint32_t tempDeviceId;
-    bool volatile foundPinout=false;
-    jDeviceCount=0;
-    channelCount = getChannels();            // First get the number of channels hooked
-    progressCount = 0;
-    maxPermutations = calculateJtagPermutations(channelCount);
-    jTDO, jTCK, jTMS, jTDI,jTRST = 0;
-    resetPins(channelCount);
-    for(jTDI=0; jTDI<channelCount; jTDI++)
+    jtag->foundPinout=false;
+    jtag->jDeviceCount=0;
+    //channelCount = getChannels();            // First get the number of channels hooked
+    jtag->progressCount = 0;
+    jtag->maxPermutations = calculateJtagPermutations(jtag->channelCount);
+    //jTDO, jTCK, jTMS, jTDI,jTRST = 0;
+    jtag->jTDO = 0;
+    jtag->jTCK = 0;
+    jtag->jTMS = 0;
+    jtag->jTDI = 0;
+    jtag->jTRST = 0;
+    resetPins(startChannel, jtag->channelCount);
+
+    for(jtag->jTDI=startChannel; jtag->jTDI<(jtag->channelCount+startChannel); jtag->jTDI++)
     {
-        for(jTDO=0; jTDO < channelCount; jTDO++)
+        for(jtag->jTDO=startChannel; jtag->jTDO < (jtag->channelCount+startChannel); jtag->jTDO++)
         {
-            if (jTDI == jTDO)
+            if (jtag->jTDI == jtag->jTDO)
             {
                 continue;
             }
-            for(jTCK =0; jTCK  < channelCount; jTCK++)
+            for(jtag->jTCK =startChannel; jtag->jTCK  < (jtag->channelCount+startChannel); jtag->jTCK++)
             {
-                if (jTCK  == jTDO || jTCK == jTDI)
+                if (jtag->jTCK  == jtag->jTDO || jtag->jTCK == jtag->jTDI)
                 {
                     continue;
                 }
-                for(jTMS=0; jTMS < channelCount; jTMS++)
-                {                      
-                        if (jTMS == jTCK || jTMS == jTDO || jTMS == jTDI)
+                for(jtag->jTMS=startChannel; jtag->jTMS < (jtag->channelCount+startChannel); jtag->jTMS++)
+                {                 
+                        if (jtag->jTMS == jtag->jTCK || jtag->jTMS == jtag->jTDO || jtag->jTMS == jtag->jTDI)
                         {
                             continue;
                         }
                         // onBoard LED notification
-                        gpio_put(onboardLED, 1);
+                        //gpio_put(onboardLED, 1);
+                        onboardLedSet(1);
                         
-                        progressCount = progressCount+1;
-                        printProgress(progressCount, maxPermutations);
-                        setPinsHigh(channelCount);                       
-                        if (jPulsePins)
+                        jtag->progressCount = jtag->progressCount+1;
+                        printProgress(jtag->progressCount, jtag->maxPermutations);
+                        setPinsHigh(startChannel, jtag->channelCount);                       
+                        if (jtag->jPulsePins)
                         {
-                            pulsePins(channelCount);
+                            pulsePins(startChannel, jtag->channelCount);
                         }
-                        jtagConfig(jTDI, jTDO, jTCK, jTMS);
-                        jDeviceCount=detectDevices();
+                        jtagConfig(jtag->jTDI, jtag->jTDO, jtag->jTCK, jtag->jTMS);
+                        jtag->jDeviceCount=detectDevices(jtag);
                         
                         uint32_t dataIn;
                         uint32_t dataOut;
                         dataIn=uint32Rand();
-                        dataOut=bypassTest(jDeviceCount, dataIn);          
+                        dataOut=bypassTest(jtag, dataIn);          
                         if(dataIn == dataOut)
                         {
-                            jDeviceCount=detectDevices();
-                            getDeviceIDs(jDeviceCount);
-                            tempDeviceId=deviceIDs[0];
-                            if (isValidDeviceID(tempDeviceId) == false || jDeviceCount <= 0 )
+                            jtag->jDeviceCount=detectDevices(jtag);
+                            getDeviceIDs(jtag, jtag->jDeviceCount);
+                            tempDeviceId=jtag->deviceIDs[0];
+                            if (isValidDeviceID(tempDeviceId) == false || jtag->jDeviceCount <= 0 )
                             {
                               continue;
                             }
                             else
                             {
-                              foundPinout=true;
+                              jtag->foundPinout=true;
                             }
                             
                             // Found all pins except nTRST, so let's try
-                            xTDI=jTDI;
-                            xTDO=jTDO;
-                            xTCK=jTCK;
-                            xTMS=jTMS;
-                            xTRST=0;
-                            for(jTRST=0; jTRST < channelCount; jTRST++)
+                            jtag->xTDI=jtag->jTDI;
+                            jtag->xTDO=jtag->jTDO;
+                            jtag->xTCK=jtag->jTCK;
+                            jtag->xTMS=jtag->jTMS;
+                            jtag->xTRST=0;
+                            for(jtag->jTRST=startChannel; jtag->jTRST < (jtag->channelCount+startChannel); jtag->jTRST++)
                             {
-                                if (jTRST == jTMS || jTRST == jTCK || jTRST == jTDO || jTRST == jTDI)
+                                if (jtag->jTRST == jtag->jTMS || jtag->jTRST == jtag->jTCK || jtag->jTRST == jtag->jTDO || jtag->jTRST == jtag->jTDI)
                                 {
                                     continue;
                                 }
-                                progressCount = progressCount+1;
-                                printProgress(progressCount, maxPermutations);
+                                jtag->progressCount = jtag->progressCount+1;
+                                printProgress(jtag->progressCount, jtag->maxPermutations);
                                 
-                                setPinsHigh(channelCount);
-                                if (jPulsePins)
+                                setPinsHigh(startChannel, jtag->channelCount);
+                                if (jtag->jPulsePins)
                                 {
-                                    pulsePins(channelCount);
+                                    pulsePins(startChannel, jtag->channelCount);
                                 }
-                                jtagConfig(jTDI, jTDO, jTCK, jTMS);
-                                gpio_put(jTRST, 1);
-                                gpio_put(jTRST, 0);
+                                jtagConfig(jtag->jTDI, jtag->jTDO, jtag->jTCK, jtag->jTMS);
+                                //gpio_put(jTRST, 1);
+                                trstHigh(jtag->jTRST);
+                                //gpio_put(jTRST, 0);
+                                trstLow(jtag->jTRST);
                                 sleep_ms(10);          // Give device time to react
 
-                                getDeviceIDs(1);
-                                if (tempDeviceId != deviceIDs[0] )
+                                getDeviceIDs(jtag, 1);
+                                if (tempDeviceId != jtag->deviceIDs[0] )
                                 {
-                                    deviceIDs[0]=tempDeviceId;
-                                    xTRST=jTRST;
+                                    jtag->deviceIDs[0]=tempDeviceId;
+                                    jtag->xTRST=jtag->jTRST;
                                 }
                             }
                             // Done enumerating everything. 
-                            if(foundPinout==true)
+                            if(jtag->foundPinout==true)
                             {
-                              displayPinout();
-                              displayDeviceDetails();
+                              displayPinout(jtag);
+                              displayDeviceDetails(jtag);
                               // onBoard LED notification
-                              gpio_put(onboardLED, 0);
-                              return;
+                              //gpio_put(onboardLED, 0);
+                              onboardLedSet(0);
+                              return true;
                             }                            
                         }
                         // onBoard LED notification
-                        gpio_put(onboardLED, 0);
+                        //gpio_put(onboardLED, 0);
+                        onboardLedSet(0);
                     }
             }
         }
     }
-    if( foundPinout == false )
-    {
-        printProgress(maxPermutations, maxPermutations);
-        printf("\n\n");
-        printf("     No JTAG devices found. Please try again.\n\n");
-    }
 
+    return jtag->foundPinout;
 }
 
 
@@ -698,23 +659,6 @@ void jtagScan(void)
 #define bitClear(value, bit) ((value) &= ~(1UL << (bit)))
 #define bitWrite(value, bit, bitvalue) ((bitvalue) ? bitSet(value, bit) : bitClear(value, bit))
 
-uint xSwdClk=0;
-uint xSwdIO=1;
-bool swdDeviceFound=false;
-int getSwdChannels(void)
-{
-    char x;
-    printf("     Enter number of channels hooked up (Min 2, Max %d): ", maxChannels);
-    x = getIntFromSerial();
-    while(x < 2 || x > maxChannels)
-    {
-        printf("     Enter a valid value: ");
-        x = getIntFromSerial();
-    }
-    printf("     Number of channels set to: %d\n\n",x);
-    return(x);
-}
-
 void swdDisplayDeviceDetails(uint32_t idcode)
 {
         printf("     [ Device 0 ]  0x%08X ",  idcode);
@@ -726,97 +670,50 @@ void swdDisplayDeviceDetails(uint32_t idcode)
 
         if (id > 1 && id <= 126 && bank <= 8) 
         {
-            printf("(mfg: '%s' , part: 0x%x, ver: 0x%x)\n",jep106_table_manufacturer(bank,id), part, ver);
+            printf("(mfg: '%s', part: 0x%x, ver: 0x%x)%s",jep106_table_manufacturer(bank,id), part, ver, BTAG_EOL);
         }
     printf("\n");
 }
 
-void swdDisplayPinout(int swdio, int swclk, uint32_t idcode)
+void swdDisplayPinout(struct swdScan_t *swd, uint32_t idcode)
 {
-    printProgress(maxPermutations, maxPermutations);
-    printf("\n\n");
-    printf("     [  Pinout  ]  SWDIO=CH%d", swdio);
-    printf(" SWCLK=CH%d\n\n", swclk);
+    printProgress(swd->maxPermutations, swd->maxPermutations);
+    printf("%s%s", BTAG_EOL, BTAG_EOL);
+    printf("     [  Pinout  ]  SWDIO=IO%d", swd->xSwdIO-8);
+    printf(" SWCLK=IO%d%s%s", swd->xSwdClk-8, BTAG_EOL, BTAG_EOL);
     swdDisplayDeviceDetails(idcode);
 }
 
-void initSwdPins(void)
+void swdTurnAround(struct swdScan_t *swd)
 {
-    gpio_set_dir(xSwdClk,GPIO_OUT);
-    gpio_set_dir(xSwdIO,GPIO_OUT);
+    //swdSetReadMode();
+    swdSetReadMode(swd->xSwdIO);
+    //swdClockPulse();
+    swdClockPulse(swd->xSwdClk, SWD_DELAY);
 }
 
-void swdClockPulse(void)
-{
-    gpio_put(xSwdClk, 0);
-    sleep_us(SWD_DELAY);
-    gpio_put(xSwdClk, 1);
-    sleep_us(SWD_DELAY);
-}
-
-void swdSetReadMode(void)
-{
-    gpio_set_dir(xSwdIO,GPIO_IN);
-}
-
-void swdTurnAround(void)
-{
-    swdSetReadMode();
-    swdClockPulse();
-}
-
-void swdSetWriteMode(void)
-{
-    gpio_set_dir(xSwdIO,GPIO_OUT);
-}
-
-void swdIOHigh(void)
-{
-    gpio_put(xSwdIO, 1);
-}
-
-void swdIOLow(void)
-{
-    gpio_put(xSwdIO, 0);
-}
-
-void swdWriteHigh(void)
-{
-    gpio_put(xSwdIO, 1);
-    swdClockPulse();
-}
-
-void swdWriteLow(void)
-{
-    gpio_put(xSwdIO, 0);
-    swdClockPulse();
-}
-
-bool swdReadBit(void)
-{
-    bool value=gpio_get(xSwdIO);
-    swdClockPulse();
-    return(value);
-}
-
-void swdReadDPIDR(void)
+void swdReadDPIDR(struct swdScan_t *swd)
 {
     long buffer;
     bool value;
     for(int x=0; x< 32; x++)
     {
-        value=swdReadBit();
+        //value=swdReadBit();
+        value=swdReadBit(swd->xSwdClk, swd->xSwdIO, SWD_DELAY);
         bitWrite(buffer, x, value);
     }
-    swdDisplayPinout(xSwdIO, xSwdClk, buffer);
+    swdDisplayPinout(swd, buffer);
 }
 
 // Receive ACK response from SWD device & verify if OK
-bool swdReadAck(void)
+bool swdReadAck(struct swdScan_t *swd)
 {
-    bool bit1=swdReadBit();
-    bool bit2=swdReadBit();
-    bool bit3=swdReadBit();
+    //bool bit1=swdReadBit();
+    bool bit1=swdReadBit(swd->xSwdClk, swd->xSwdIO, SWD_DELAY);
+    //bool bit2=swdReadBit();
+    bool bit2=swdReadBit(swd->xSwdClk, swd->xSwdIO, SWD_DELAY);
+    //bool bit3=swdReadBit();
+    bool bit3=swdReadBit(swd->xSwdClk, swd->xSwdIO, SWD_DELAY);
     if(bit1 == true && bit2 == false && bit3 == false)
     {
         return true;
@@ -827,164 +724,175 @@ bool swdReadAck(void)
     }
 }
 
-void swdWriteBit(bool value)
-{
-    gpio_put(xSwdIO, value);
-    swdClockPulse();
-}
-
-void swdWriteBits(long value, int length)
+void swdWriteBits(struct swdScan_t *swd, long value, int length)
 {
     for (int i=0; i<length; i++)
     {
-        swdWriteBit(bitRead(value, i));
+        swdWriteBit(swd->xSwdIO, swd->xSwdClk, bitRead(value, i), SWD_DELAY);
     }
 }
 
-void swdResetLineSWDJ(void)
+void swdResetLineSWDJ(struct swdScan_t *swd)
 {
-    swdIOHigh();
+    //swdIOHigh();
+    swdIOHigh(swd->xSwdIO);
     for(int x=0; x < LINE_RESET_CLK_CYCLES+10; x++)
     {
-        swdClockPulse();
+        //swdClockPulse();
+        swdClockPulse(swd->xSwdClk, SWD_DELAY);
     }
 }
 
-void swdResetLineSWD(void)
+void swdResetLineSWD(struct swdScan_t *swd)
 {
-    swdIOHigh();
+    //swdIOHigh();
+    swdIOHigh(swd->xSwdIO);
     for(int x=0; x < LINE_RESET_CLK_CYCLES+10; x++)
     {
-        swdClockPulse();
+        //swdClockPulse();
+        swdClockPulse(swd->xSwdClk, SWD_DELAY);
     }
-    swdIOLow();
-    swdClockPulse();
-    swdClockPulse();
-    swdClockPulse();
-    swdClockPulse();
-    swdIOHigh();
+    //swdIOLow();
+    swdIOLow(swd->xSwdIO);
+    //swdClockPulse();
+    swdClockPulse(swd->xSwdClk, SWD_DELAY);
+    //swdClockPulse();
+    swdClockPulse(swd->xSwdClk, SWD_DELAY);
+    //swdClockPulse();
+    swdClockPulse(swd->xSwdClk, SWD_DELAY);
+    //swdClockPulse();
+    swdClockPulse(swd->xSwdClk, SWD_DELAY);
+    //swdIOHigh();
+    swdIOHigh(swd->xSwdIO);    
 }
 
 // Leave dormant state
-void swdArmWakeUp(void)
+void swdArmWakeUp(struct swdScan_t *swd)
 {
-    swdSetWriteMode();
-    swdIOHigh();
+    //swdSetWriteMode();
+    swdSetWriteMode(swd->xSwdIO);
+    //swdIOHigh();
+    swdIOHigh(swd->xSwdIO);
     for(int x=0;x < 8; x++)     // Reset to selection Alert Sequence
     {
-        swdClockPulse();
+        //swdClockPulse();
+        swdClockPulse(swd->xSwdClk, SWD_DELAY);
     }
 
     // Send selection alert sequence 0x19BC0EA2 E3DDAFE9 86852D95 6209F392 (128 bits)
-    swdWriteBits(0x92, 8);
-    swdWriteBits(0xf3, 8);
-    swdWriteBits(0x09, 8);
-    swdWriteBits(0x62, 8);
+    swdWriteBits(swd, 0x92, 8);
+    swdWriteBits(swd, 0xf3, 8);
+    swdWriteBits(swd, 0x09, 8);
+    swdWriteBits(swd, 0x62, 8);
 
-    swdWriteBits(0x95, 8);
-    swdWriteBits(0x2D, 8);
-    swdWriteBits(0x85, 8);
-    swdWriteBits(0x86, 8);
+    swdWriteBits(swd, 0x95, 8);
+    swdWriteBits(swd, 0x2D, 8);
+    swdWriteBits(swd, 0x85, 8);
+    swdWriteBits(swd, 0x86, 8);
 
-    swdWriteBits(0xE9, 8);
-    swdWriteBits(0xAF, 8);
-    swdWriteBits(0xDD, 8);
-    swdWriteBits(0xE3, 8);
+    swdWriteBits(swd, 0xE9, 8);
+    swdWriteBits(swd, 0xAF, 8);
+    swdWriteBits(swd, 0xDD, 8);
+    swdWriteBits(swd, 0xE3, 8);
 
-    swdWriteBits(0xA2, 8);
-    swdWriteBits(0x0E, 8);
-    swdWriteBits(0xBC, 8);
-    swdWriteBits(0x19, 8);
+    swdWriteBits(swd, 0xA2, 8);
+    swdWriteBits(swd, 0x0E, 8);
+    swdWriteBits(swd, 0xBC, 8);
+    swdWriteBits(swd, 0x19, 8);
 
-    swdWriteBits(0x00, 4);   // idle bits
-    swdWriteBits(SWDP_ACTIVATION_CODE, 8);
+    swdWriteBits(swd, 0x00, 4);   // idle bits
+    swdWriteBits(swd, SWDP_ACTIVATION_CODE, 8);
 }
 
-void swdToJTAG(void)
+void swdToJTAG(struct swdScan_t *swd)
 {
-  swdResetLineSWDJ();
-  swdWriteBits(SWD_TO_JTAG_CMD, 16);
+  swdResetLineSWDJ(swd);
+  swdWriteBits(swd, SWD_TO_JTAG_CMD, 16);
 }
 
-void swdTrySWDJ(void)
+bool swdTrySWDJ(struct swdScan_t *swd)
 {
-    swdSetWriteMode();
-    swdArmWakeUp();                     // Needed for devices like RPi Pico
-    swdResetLineSWDJ();
-    swdWriteBits(JTAG_TO_SWD_CMD, 16);
-    swdResetLineSWDJ();
-    swdWriteBits(0x00, 4);
+    //swdSetWriteMode();
+    swdSetWriteMode(swd->xSwdIO);
+    swdArmWakeUp(swd);                     // Needed for devices like RPi Pico
+    swdResetLineSWDJ(swd);
+    swdWriteBits(swd, JTAG_TO_SWD_CMD, 16);
+    swdResetLineSWDJ(swd);
+    swdWriteBits(swd, 0x00, 4);
 
-    swdWriteBits(0xA5, 8);             // readIdCode command 0b10100101
-    swdTurnAround();
+    swdWriteBits(swd, 0xA5, 8);             // readIdCode command 0b10100101
+    swdTurnAround(swd);
     
-    if(swdReadAck() == true)           // Got ACK OK
+    if(swdReadAck(swd) == true)           // Got ACK OK
     {
-        swdDeviceFound=true;
-        swdReadDPIDR();
+        swd->swdDeviceFound=true;
+        swdReadDPIDR(swd);
     }
-    swdTurnAround();
-    swdSetWriteMode();
-    swdWriteBits(0x00, 8);
+    swdTurnAround(swd);
+    //swdSetWriteMode();
+    swdSetWriteMode(swd->xSwdIO);
+    swdWriteBits(swd, 0x00, 8);
+    return(swd->swdDeviceFound);
 }
 
-bool swdBruteForce(void)
+bool swdBruteForce(struct swdScan_t *swd)
 {
     // onBoard LED notification
-    gpio_put(onboardLED, 1);
-    swdTrySWDJ();
-    gpio_put(onboardLED, 0);
-    if(swdDeviceFound)
+    //gpio_put(onboardLED, 1);
+    onboardLedSet(1);
+    bool result = swdTrySWDJ(swd);
+    //gpio_put(onboardLED, 0);
+    onboardLedSet(0);
+    if(result)
     { return(true); } else { return(false); }
 }
 
-void swdScan(void)
+bool swdScan(struct swdScan_t *swd)
 { 
-    
-    swdDeviceFound = false;
+    swd->swdDeviceFound = false;
     bool result = false;    
-    int channelCount = getSwdChannels();
-    progressCount = 0;
-    maxPermutations = channelCount * (channelCount - 1);
-    for(uint clkPin=0; clkPin < channelCount; clkPin++)
+    //int channelCount = getSwdChannels();
+    swd->progressCount = 0;
+    swd->maxPermutations = swd->channelCount * (swd->channelCount - 1);
+    for(uint clkPin=startChannel; clkPin < (swd->channelCount+startChannel); clkPin++)
     {
-        xSwdClk = clkPin;
-        for(uint ioPin=0; ioPin < channelCount; ioPin++)
+        swd->xSwdClk = clkPin;
+        for(uint ioPin=startChannel; ioPin < (swd->channelCount+startChannel); ioPin++)
         {
-            xSwdIO = ioPin;
-            if( xSwdClk == xSwdIO)
+            swd->xSwdIO = ioPin;
+            if( swd->xSwdClk == swd->xSwdIO)
             {
                 continue;
             }
-            printProgress(progressCount, maxPermutations);
-            progressCount++;
-            initSwdPins();
-            result = swdBruteForce();
+            printProgress(swd->progressCount, swd->maxPermutations);
+            swd->progressCount++;
+            initSwdPins(swd->xSwdClk, swd->xSwdIO);
+            result = swdBruteForce(swd);
             if (result) break;
         }
         if (result) break; 
     }
-    if(swdDeviceFound == false)
-    {
-        printProgress(maxPermutations, maxPermutations);
-        printf("\n\n");
-        printf("     No devices found. Please try again.\n\n");
-    }
+
     // Switch back to JTAG
-    swdToJTAG();
+    swdToJTAG(swd);
+
+    // return success or fail
+    return result;
 }
 
 //--------------------------------------------Main--------------------------------------------------
 
-int main()
+static int main()
 {
+    char cmd;
     stdio_init_all();
 
     // GPIO init
-    gpio_init(onboardLED);
-    gpio_set_dir(onboardLED, GPIO_OUT);
-    initChannels();
-    jPulsePins=true;
+    //gpio_init(onboardLED);
+    //gpio_set_dir(onboardLED, GPIO_OUT);
+    onboardLedInit();
+    initChannels(startChannel, maxChannels);
+    bool jPulsePins=true;
     
     //get user input to display splash & menu    
     cmd=getc(stdin);
@@ -1007,11 +915,26 @@ int main()
                 break;
 
             case 'j':
-                jtagScan();
+                struct jtagScan_t jtag;
+                jtag.channelCount = getChannels(4, maxChannels);
+                jtag.jPulsePins = jPulsePins;
+                if(!jtagScan(&jtag))
+                {
+                    printProgress(jtag.maxPermutations, jtag.maxPermutations);
+                    printf("\n\n");
+                    printf("     No JTAG devices found. Please try again.\n\n");
+                }
                 break;
 
-            case 's':
-                swdScan();
+            case 's': 
+                struct swdScan_t swd;
+                swd.channelCount = getChannels(2, maxChannels);              
+                if(!swdScan(&swd))
+                {
+                    printProgress(swd.maxPermutations, swd.maxPermutations);
+                    printf("\n\n");
+                    printf("     No devices found. Please try again.\n\n");
+                }                
                 break;
 
             case 'p':
@@ -1030,9 +953,11 @@ int main()
             case 'x':
                 for(int x=0;x<=25;x++)
                 {
-                    gpio_put(onboardLED, 1);
+                    //gpio_put(onboardLED, 1);
+                    onboardLedSet(1);
                     sleep_ms(250);
-                    gpio_put(onboardLED, 0);
+                    //gpio_put(onboardLED, 0);
+                    onboardLedSet(0);
                     sleep_ms(250);
                 }
                 break;
@@ -1044,4 +969,10 @@ int main()
         showPrompt();
     }    
     return 0;
+}
+
+///////////////// HELPER ADDITIONS //////////////////////
+void bluetag_progressbar_cleanup(uint maxPermutations)
+{
+    printProgress(maxPermutations, maxPermutations);
 }
