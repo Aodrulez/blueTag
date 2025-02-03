@@ -14,6 +14,7 @@
 #define BTAG_MAX_NUM_JTAG 32 // Unused in source
 #define BTAG_START_CHANNEL 0 // First GPIO pin to use 0 - 16 by default
 #define BTAG_MAX_CHANNELS 16 // Max number of channels supported by Pico  (upto 16 on a bare board)
+#define BTAG_EOL "\r\n"
 
 struct jtagScan_t
 {
