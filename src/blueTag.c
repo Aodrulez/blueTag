@@ -284,13 +284,13 @@ void displayPinout(struct jtagScan_t *jtag)
 {
     printProgress(jtag->maxPermutations, jtag->maxPermutations);
     printf("%s%s", BTAG_EOL, BTAG_EOL);
-    printf("     [  Pinout  ]  TDI=CH%d", jtag->xTDI);
-    printf(" TDO=CH%d", jtag->xTDO);
-    printf(" TCK=CH%d", jtag->xTCK);
-    printf(" TMS=CH%d", jtag->xTMS);
+    printf("     [  Pinout  ]  TDI=IO%d", jtag->xTDI-8);
+    printf(" TDO=IO%d", jtag->xTDO-8);
+    printf(" TCK=IO%d", jtag->xTCK-8);
+    printf(" TMS=IO%d", jtag->xTMS-8);
     if(jtag->xTRST != 0)
     {
-        printf(" TRST=CH%d %s%s", jtag->xTRST, BTAG_EOL, BTAG_EOL);
+        printf(" TRST=IO%d %s%s", jtag->xTRST-8, BTAG_EOL, BTAG_EOL);
     }
     else
     {
@@ -679,8 +679,8 @@ void swdDisplayPinout(struct swdScan_t *swd, uint32_t idcode)
 {
     printProgress(swd->maxPermutations, swd->maxPermutations);
     printf("%s%s", BTAG_EOL, BTAG_EOL);
-    printf("     [  Pinout  ]  SWDIO=CH%d", swd->xSwdIO);
-    printf(" SWCLK=CH%d%s%s", swd->xSwdClk, BTAG_EOL, BTAG_EOL);
+    printf("     [  Pinout  ]  SWDIO=IO%d", swd->xSwdIO-8);
+    printf(" SWCLK=IO%d%s%s", swd->xSwdClk-8, BTAG_EOL, BTAG_EOL);
     swdDisplayDeviceDetails(idcode);
 }
 
