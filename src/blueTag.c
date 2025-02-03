@@ -27,46 +27,13 @@ const char *banner=R"banner(
 
 
 char *version="1.0.2";
-#if 0
-#define  MAX_DEVICES_LEN    32                             // Maximum number of devices allowed in a single JTAG chain
-#define  MIN_IR_LEN          2                             // Minimum length of instruction register per IEEE Std. 1149.1
-#define  MAX_IR_LEN         32                             // Maximum length of instruction register
-#define  MAX_IR_CHAIN_LEN   MAX_DEVICES_LEN * MAX_IR_LEN   // Maximum total length of JTAG chain w/ IR selected
-#define  MAX_DR_LEN         4096                           // Maximum length of data register
-#define ARRAY_SIZE(array) (sizeof(array) / sizeof(*array))
-#define CR		    13
-#define LF		    10
-//#define ONBOARD_LED 25 //if not defined, onboard LED will not be used
-#endif 
-
 
 #ifdef ONBOARD_LED
 const uint onboardLED = ONBOARD_LED;
 #endif
 const uint unusedGPIO = 28;                               // Pins on Pico are accessed using GPIO names
-//const uint MAX_NUM_JTAG  = 32;
 const uint startChannel = BTAG_START_CHANNEL;              // First GPIO pin to use 0 - 16 by default
 const uint maxChannels = BTAG_MAX_CHANNELS;               // Max number of channels supported by Pico  
-
-#if 0
-uint progressCount = 0;
-uint maxPermutations = 0;
-
-uint jTDI;           
-uint jTDO;
-uint jTCK;
-uint jTMS;
-uint jTRST;
-uint jDeviceCount;
-bool jPulsePins;
-uint32_t deviceIDs[MAX_DEVICES_LEN];                         // Array to store identified device IDs
-
-uint xTDI;           
-uint xTDO;
-uint xTCK;
-uint xTMS;
-uint xTRST;
-#endif
 
 // include file from openocd/src/helper
 static const char * const jep106[][126] = {
@@ -206,26 +173,6 @@ uint getChannels(uint minChannels, uint maxChannels)
     return(x);
 }
 
-#if 0
-// Function that sets all used channels to output high
-void setPinsHigh(int channelCount)
-{
-    for(int x = 0; x < channelCount; x++)
-    {
-        gpio_put(x, 1);
-    }
-}
-
-// Function that sets all used channels to output low
-void setPinsLoW(int channelCount)
-{
-    for(int x = 0; x < channelCount; x++)
-    {
-        gpio_put(x, 0);
-    }
-}
-#endif
-
 // Function that sets all used channels to output high
 static inline void resetPins(uint startChannel, uint channelCount)
 {
@@ -244,40 +191,6 @@ void pulsePins(uint startChannel, uint channelCount)
     setPinsHigh(startChannel, channelCount);
     sleep_ms(2);
 }
-#if 0
-// Initialize all available channels & set them as output
-void initChannels(void)
-{
-    for(int x=0; x < maxChannels ; x++)
-    {
-        gpio_init(x);
-        gpio_set_dir(x, GPIO_OUT);
-    }   
-}
-
-void jtagConfig(uint tdiPin, uint tdoPin, uint tckPin, uint tmsPin)
-{
-    // Output
-    gpio_set_dir(tdiPin, GPIO_OUT);
-    gpio_set_dir(tckPin, GPIO_OUT);
-    gpio_set_dir(tmsPin, GPIO_OUT);
-
-    // Input
-    gpio_set_dir(tdoPin, GPIO_IN);
-    gpio_put(tckPin, 0);
-}
-
-// Generate one TCK pulse. Read TDO inside the pulse.
-// Expects TCK to be low upon being called.
-bool tdoRead(void)
-{
-    bool volatile tdoStatus;
-    gpio_put(jTCK, 1);
-    tdoStatus=gpio_get(jTDO);
-    gpio_put(jTCK, 0);
-    return(tdoStatus);
-}
-#endif
 
 // Generates on TCK Pulse
 // Expects TCK to be low when called & ignores TDO
@@ -287,27 +200,7 @@ void tckPulse(struct jtagScan_t *jtag)
     //tdoStatus=tdoRead();
     tdoStatus=tdoRead(jtag->jTCK, jtag->jTDO);
 }
-#if 0
-void tdiHigh(void)
-{
-    gpio_put(jTDI, 1);
-}
 
-void tdiLow(void)
-{
-    gpio_put(jTDI, 0);
-}
-
-void tmsHigh(void)
-{
-    gpio_put(jTMS, 1);
-}
-
-void tmsLow(void)
-{
-    gpio_put(jTMS, 0);
-}
-#endif
 void restoreIdle(struct jtagScan_t *jtag)
 {
     //tmsHigh();
@@ -436,8 +329,8 @@ void displayDeviceDetails(struct jtagScan_t *jtag)
 {
     for(int x=0; x < jtag->jDeviceCount; x++)
     {
-        printf("     [ Device %d ]  0x%08X ", x, jtag->deviceIDs[x]);
         uint32_t idc = jtag->deviceIDs[x];
+        printf("     [ Device %d ]  0x%08X ", x, idc);
         long part = (idc & 0xffff000) >> 12;
         int bank=(idc & 0xf00) >> 8;
         int id=(idc & 0xfe) >> 1;
@@ -445,7 +338,7 @@ void displayDeviceDetails(struct jtagScan_t *jtag)
 
         if (id > 1 && id <= 126 && bank <= 8) 
         {
-            printf("(mfg: '%s' , part: 0x%x, ver: 0x%x)%s",jep106_table_manufacturer(bank,id), part, ver, BTAG_EOL);
+            printf("(mfg: '%s', part: 0x%x, ver: 0x%x)%s",jep106_table_manufacturer(bank,id), part, ver, BTAG_EOL);
         }
     }
     printf("\n");
@@ -777,7 +670,7 @@ void swdDisplayDeviceDetails(uint32_t idcode)
 
         if (id > 1 && id <= 126 && bank <= 8) 
         {
-            printf("(mfg: '%s' , part: 0x%x, ver: 0x%x)%s",jep106_table_manufacturer(bank,id), part, ver, BTAG_EOL);
+            printf("(mfg: '%s', part: 0x%x, ver: 0x%x)%s",jep106_table_manufacturer(bank,id), part, ver, BTAG_EOL);
         }
     printf("\n");
 }
@@ -790,26 +683,7 @@ void swdDisplayPinout(struct swdScan_t *swd, uint32_t idcode)
     printf(" SWCLK=CH%d%s%s", swd->xSwdClk, BTAG_EOL, BTAG_EOL);
     swdDisplayDeviceDetails(idcode);
 }
-#if 0
-void initSwdPins(void)
-{
-    gpio_set_dir(xSwdClk,GPIO_OUT);
-    gpio_set_dir(xSwdIO,GPIO_OUT);
-}
 
-void swdClockPulse(void)
-{
-    gpio_put(xSwdClk, 0);
-    sleep_us(SWD_DELAY);
-    gpio_put(xSwdClk, 1);
-    sleep_us(SWD_DELAY);
-}
-
-void swdSetReadMode(void)
-{
-    gpio_set_dir(xSwdIO,GPIO_IN);
-}
-#endif
 void swdTurnAround(struct swdScan_t *swd)
 {
     //swdSetReadMode();
@@ -817,41 +691,6 @@ void swdTurnAround(struct swdScan_t *swd)
     //swdClockPulse();
     swdClockPulse(swd->xSwdClk, SWD_DELAY);
 }
-#if 0
-void swdSetWriteMode(void)
-{
-    gpio_set_dir(xSwdIO,GPIO_OUT);
-}
-
-void swdIOHigh(void)
-{
-    gpio_put(xSwdIO, 1);
-}
-
-void swdIOLow(void)
-{
-    gpio_put(xSwdIO, 0);
-}
-
-void swdWriteHigh(void)
-{
-    gpio_put(xSwdIO, 1);
-    swdClockPulse();
-}
-
-void swdWriteLow(void)
-{
-    gpio_put(xSwdIO, 0);
-    swdClockPulse();
-}
-
-bool swdReadBit(void)
-{
-    bool value=gpio_get(xSwdIO);
-    swdClockPulse();
-    return(value);
-}
-#endif 
 
 void swdReadDPIDR(struct swdScan_t *swd)
 {
@@ -884,15 +723,6 @@ bool swdReadAck(struct swdScan_t *swd)
         return false;
     }
 }
-
-#if 0
-void swdWriteBit(uint xSwdIO, bool value, uint swd_delay)
-{
-    gpio_put(xSwdIO, value);
-    //swdClockPulse();
-    swdClockPulse(xSwdClk, SWD_DELAY);
-}
-#endif
 
 void swdWriteBits(struct swdScan_t *swd, long value, int length)
 {
