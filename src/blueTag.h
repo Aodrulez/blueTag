@@ -9,11 +9,12 @@
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof(*array))
 #define CR		    13
 #define LF		    10
+
 //#define ONBOARD_LED 25 // If not defined, onboard LED will not be used
 #define BTAG_UNUSED_GPIO 28 // Unused in source
 #define BTAG_MAX_NUM_JTAG 32 // Unused in source
-#define BTAG_START_CHANNEL 0 // First GPIO pin to use 0 - 16 by default
-#define BTAG_MAX_CHANNELS 16 // Max number of channels supported by Pico  (upto 16 on a bare board)
+#define BTAG_START_CHANNEL 8 // First GPIO pin to use 0 - 16 by default
+#define BTAG_MAX_CHANNELS 8 // Max number of channels supported by Pico  (upto 16 on a bare board)
 #define BTAG_EOL "\r\n"
 
 struct jtagScan_t
