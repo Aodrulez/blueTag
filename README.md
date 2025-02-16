@@ -5,7 +5,7 @@ JTAGulator alternative for RP2040 microcontroller based development boards inclu
 
 
 
-![](images/BlueTag.png?raw=true "blueTag detecting SWD pinout on STM32 Blue Pill & a Raspberry Pi Pico")
+![](images/bluetag-v2.0.png?raw=true "blueTag v2.0.0 Interface")
 
 
 ## Pinout
