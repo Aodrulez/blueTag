@@ -22,6 +22,8 @@ JTAGulator alternative & a hardware hacker's multi-tool for RP2040 microcontroll
 - Press any key in the terminal emulator program to start using blueTag
 - UI provides detailed guidance for all commands & hardware modes
 
+> **_Hardware boot modes:_** If you want blueTag to boot straight into a hardware mode, connect the relevant hardware boot mode selection GPIO to GND & reset or reconnect blueTag. As long as the GPIO is connected to GND, blueTag will continue to boot into the selected hardware mode when reset or reconnected. Only one boot mode can be selected at a time. 
+
 > **_NOTE 1:_** Most RP2040 microcontroller based development board's GPIO pins function at 3.3v. For connecting to devices running other voltage levels, use of external level shifter(s) will be required.
 
 > **_NOTE 2:_** Since the algorithm verifies channels in order (from 0 to 15), connect the channels in sequence (from 0 to 15) to your target's testpads/test points for the quickest execution time.  
@@ -66,7 +68,6 @@ docker cp pico-builder-container:/project/src/build/blueTag.uf2 ./
 - https://github.com/raspberrypi/debugprobe
 
 ## License details
-TinyUSB is licensed under the MIT license.
-ARM's CMSIS_5 code is licensed under the Apache 2.0 license.
+TinyUSB is licensed under the MIT license. \
+ARM's CMSIS_5 code is licensed under the Apache 2.0 license. \
 Source code files within this project are licensed under the MIT license unless otherwise stated.
-
