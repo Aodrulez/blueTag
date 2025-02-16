@@ -1,6 +1,6 @@
 # [ blueTag ] 
     
-JTAGulator alternative for RP2040 microcontroller based development boards including RPi Pico. Huge shout-out to Joe Grand for his JTAGulator project!
+JTAGulator alternative & a hardware hacker's multi-tool for RP2040 microcontroller based development boards including RPi Pico. Huge shout-out to Joe Grand for his JTAGulator project!
 
 
 
