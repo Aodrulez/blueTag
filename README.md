@@ -26,7 +26,7 @@ JTAGulator alternative & a hardware hacker's multi-tool for RP2040 microcontroll
 
 > **_NOTE 1:_** Most RP2040 microcontroller based development board's GPIO pins function at 3.3v. For connecting to devices running other voltage levels, use of external level shifter(s) will be required.
 
-> **_NOTE 2:_** Since the algorithm verifies channels in order (from 0 to 15), connect the channels in sequence (from 0 to 15) to your target's testpads/test points for the quickest execution time when using JTAGulator functions.  
+> **_NOTE 2:_** Since the algorithm verifies channels in order (from 0 to 15), connect the channels in sequence (from 0 to 15) to your target's testpads/test points for the quickest execution time when using JTAGulator function.  
 
 ## Local build instructions
 > **Recommended to use Docker**
