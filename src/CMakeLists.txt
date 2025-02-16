@@ -1,7 +1,64 @@
+# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
+if(WIN32)
+    set(USERHOME $ENV{USERPROFILE})
+else()
+    set(USERHOME $ENV{HOME})
+endif()
+set(sdkVersion 2.1.0)
+set(toolchainVersion 13_3_Rel1)
+set(picotoolVersion 2.1.0)
+set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
+if (EXISTS ${picoVscode})
+    include(${picoVscode})
+endif()
+# ====================================================================================
+# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
+if(WIN32)
+    set(USERHOME $ENV{USERPROFILE})
+else()
+    set(USERHOME $ENV{HOME})
+endif()
+set(sdkVersion 2.1.0)
+set(toolchainVersion 13_3_Rel1)
+set(picotoolVersion 2.1.0)
+set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
+if (EXISTS ${picoVscode})
+    include(${picoVscode})
+endif()
+# ====================================================================================
+# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
+if(WIN32)
+    set(USERHOME $ENV{USERPROFILE})
+else()
+    set(USERHOME $ENV{HOME})
+endif()
+set(sdkVersion 2.1.0)
+set(toolchainVersion 13_3_Rel1)
+set(picotoolVersion 2.1.0)
+set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
+if (EXISTS ${picoVscode})
+    include(${picoVscode})
+endif()
+# ====================================================================================
+# == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
+if(WIN32)
+    set(USERHOME $ENV{USERPROFILE})
+else()
+    set(USERHOME $ENV{HOME})
+endif()
+set(sdkVersion 2.1.0)
+set(toolchainVersion 13_3_Rel1)
+set(picotoolVersion 2.1.0)
+set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
+if (EXISTS ${picoVscode})
+    include(${picoVscode})
+endif()
+# ====================================================================================
 cmake_minimum_required(VERSION 3.12)
 
 # Include build functions from Pico SDK
-include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
+# include(${USERHOME}/research/blueTag/pico-sdk/external/pico_sdk_import.cmake)
+ include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
 # Set name of project (as PROJECT_NAME) and C/C   standards
 project(blueTag C CXX ASM)
@@ -13,17 +70,57 @@ pico_sdk_init()
 
 # Tell CMake where to find the executable source file
 add_executable(${PROJECT_NAME} 
-    blueTag.c 
+    blueTag.c
+    usbDescriptors.c
+    modules/usb2serial/uartBridge.c
+    modules/flashProgrammer/serProg.c
+    modules/openocd/openocdHandler.c
+    modules/openocd/openocdJTAG.c
+    modules/openocd/openocdSWD.c
+    modules/cmsis-dap/cmsisDAP.c 
+    modules/cmsis-dap/CMSIS_5/CMSIS/DAP/Firmware/Source/DAP.c
+    modules/cmsis-dap/CMSIS_5/CMSIS/DAP/Firmware/Source/JTAG_DP.c
+    modules/cmsis-dap/CMSIS_5/CMSIS/DAP/Firmware/Source/DAP_vendor.c
+    modules/cmsis-dap/CMSIS_5/CMSIS/DAP/Firmware/Source/SWO.c
+    modules/cmsis-dap/CMSIS_5/CMSIS/DAP/Firmware/Source/SW_DP.c
+    modules/cmsis-dap/bsp/rp2040/cdc_uart.c
 )
 
-# Create map/bin/hex/uf2 files
-pico_add_extra_outputs(${PROJECT_NAME})
+include_directories( ./
+    modules/usb2serial
+    modules/flashProgrammer
+    modules/openocd
+    modules/cmsis-dap/
+    modules/cmsis-dap/CMSIS_5/CMSIS/DAP/Firmware/Include/
+    modules/cmsis-dap/CMSIS_5/CMSIS/Core/Include/
+    modules/cmsis-dap/bsp/rp2040/
+)
 
-# Link to pico_stdlib (gpio, time, etc. functions)
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+  PICO_DEFAULT_UART=0
+  PICO_DEFAULT_UART_TX_PIN=16
+  PICO_DEFAULT_UART_RX_PIN=17
+)
+
 target_link_libraries(${PROJECT_NAME} 
     pico_stdlib
+    hardware_flash
+    hardware_spi
+	pico_multicore
+    pico_rand
+	pico_stdlib
+	tinyusb_device
+    tinyusb_board
+    pico_unique_id
 )
 
 # Enable usb output, disable uart output
 pico_enable_stdio_usb(${PROJECT_NAME} 1)
 pico_enable_stdio_uart(${PROJECT_NAME} 0)
+
+# Create map/bin/hex/uf2 files
+pico_add_extra_outputs(${PROJECT_NAME})
+
+
+
+
