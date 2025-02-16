@@ -1,11 +1,25 @@
 # CHANGELOG.md
 
-## 1.0.2 (2024-11-19)
+## 2.0.0 (2024-11-11)
 
 Fixes:
 
- - JTAG scan function underwent a major change, should be more reliable now
- - SWD scan time is now optimized, should be much faster than before
+ - Debug interface scan logic for both JTAG & SWD is now improved as well as safer than before
+ - Fixed a bug where SWD scan mode logic didn't switch back the target device to JTAG mode when successful
+ - Fixed a bug related to TRST pin identification logic for the JTAG scan mode
+ 
+Features:
+ - Added support for four new hardware modes (USB-to-Serial, Flashrom's serial programmer, Openocd JTAG/SWD debugger, CMSIS-DAP v1.0 debugger)
+ - Added the option for blueTag to boot straight into above mentioned hardware modes
+
+Others:
+ - Updated description of the project with relevant details for this major release
+
+## 1.0.2 (2024-11-11)
+
+Fixes:
+
+ - None
  
 Features:
  - Updated default available channels from 9 to 16 
