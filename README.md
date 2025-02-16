@@ -22,7 +22,7 @@ JTAGulator alternative & a hardware hacker's multi-tool for RP2040 microcontroll
 - Press any key in the terminal emulator program to start using blueTag
 - UI provides detailed guidance for all commands & hardware modes
 
-> **_Hardware boot modes:_** If you want blueTag to boot straight into a hardware mode, connect the relevant hardware boot mode selection GPIO to GND & reset or reconnect blueTag. As long as the GPIO is connected to GND, blueTag will continue to boot into the selected hardware mode when reset or reconnected. Only one boot mode can be selected at a time. 
+> **_Hardware boot modes:_** If you want blueTag to boot straight into a hardware mode, connect the relevant hardware boot mode selection GPIO to GND & reset or reconnect blueTag to your computer. As long as the GPIO is connected to GND, blueTag will continue to boot into the selected hardware mode when reset or reconnected. Only one boot mode can be active at a time. 
 
 > **_NOTE 1:_** Most RP2040 microcontroller based development board's GPIO pins function at 3.3v. For connecting to devices running other voltage levels, use of external level shifter(s) will be required.
 
