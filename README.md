@@ -39,31 +39,31 @@ docker cp pico-builder-container:/project/src/build/blueTag.uf2 ./
 ```
 
 ## References & special thanks
->       JTAGulator features :
->        https://github.com/grandideastudio/jtagulator
->        https://research.kudelskisecurity.com/2019/05/16/swd-arms-alternative-to-jtag/
->        https://github.com/jbentham/picoreg
->        https://github.com/szymonh/SWDscan
->        Yusufss4 (https://gist.github.com/amullins83/24b5ef48657c08c4005a8fab837b7499?permalink_comment_id=4554839#gistcomment-4554839)
->        Arm Debug Interface Architecture Specification (debug_interface_v5_2_architecture_specification_IHI0031F.pdf)
+ JTAGulator features :
+- https://github.com/grandideastudio/jtagulator
+- https://research.kudelskisecurity.com/2019/05/16/swd-arms-alternative-to-jtag/
+- https://github.com/jbentham/picoreg
+- https://github.com/szymonh/SWDscan
+- Yusufss4 (https://gist.github.com/amullins83/24b5ef48657c08c4005a8fab837b7499?permalink_comment_id=4554839#gistcomment-4554839)
+- Arm Debug Interface Architecture Specification (debug_interface_v5_2_architecture_specification_IHI0031F.pdf)
         
->      Flashrom support :
->        https://www.flashrom.org/supported_hw/supported_prog/serprog/serprog-protocol.html
->        https://github.com/stacksmashing/pico-serprog
+ Flashrom support :
+- https://www.flashrom.org/supported_hw/supported_prog/serprog/serprog-protocol.html
+- https://github.com/stacksmashing/pico-serprog
 
->      Openocd support  : 
->        http://dangerousprototypes.com/blog/2009/10/09/bus-pirate-raw-bitbang-mode/
->        http://dangerousprototypes.com/blog/2009/10/27/binary-raw-wire-mode/
->        https://github.com/grandideastudio/jtagulator/blob/master/PropOCD.spin
->        https://github.com/DangerousPrototypes/Bus_Pirate/blob/master/Firmware/binIO.c
+ Openocd support  : 
+- http://dangerousprototypes.com/blog/2009/10/09/bus-pirate-raw-bitbang-mode/
+- http://dangerousprototypes.com/blog/2009/10/27/binary-raw-wire-mode/
+- https://github.com/grandideastudio/jtagulator/blob/master/PropOCD.spin
+- https://github.com/DangerousPrototypes/Bus_Pirate/blob/master/Firmware/binIO.c
 
->      USB-to-Serial support :
->        https://github.com/xxxajk/pico-uart-bridge
->        https://github.com/Noltari/pico-uart-bridge
+ USB-to-Serial support :
+- https://github.com/xxxajk/pico-uart-bridge
+- https://github.com/Noltari/pico-uart-bridge
 
->      CMSIS-DAP support :
->        https://github.com/majbthrd/DapperMime
->        https://github.com/raspberrypi/debugprobe
+ CMSIS-DAP support :
+- https://github.com/majbthrd/DapperMime
+- https://github.com/raspberrypi/debugprobe
 
 ## License details
 TinyUSB is licensed under the MIT license.
