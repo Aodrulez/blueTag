@@ -4,12 +4,12 @@ JTAGulator alternative & a hardware hacker's multi-tool for RP2040 microcontroll
 
 ![](images/bluetag-v2.0.png?raw=true "blueTag v2.0.0 Interface")
 
-## Features  
+## Features
 - Detects JTAG & SWD debug pinout (JTAGulator function)  
-- Works as a USB-to-Serial adapter  
-- Reads & writes flash ICs supported by Flashrom  
-- Acts as a BusPirate-based adapter for OpenOCD (supports JTAG & SWD modes)  
-- Functions as a CMSIS-DAP adapter (supports UART & SWD interface)
+- Functions as a USB-to-Serial adapter  
+- Reads & writes flash ICs with Flashrom  
+- Supports OpenOCD with JTAG & SWD modes (BusPirate protocol)  
+- Acts as a CMSIS-DAP adapter (supports UART & SWD)  
 
 ## Pinout
 ![](images/BlueTagPinout.png?raw=true "blueTag Pinout")
@@ -47,34 +47,34 @@ docker create --name pico-builder-container pico-builder-image
 docker cp pico-builder-container:/project/src/build/blueTag.uf2 ./
 ```
 
-## References & special thanks
- JTAGulator features :
-- https://github.com/grandideastudio/jtagulator
-- https://research.kudelskisecurity.com/2019/05/16/swd-arms-alternative-to-jtag/
-- https://github.com/jbentham/picoreg
-- https://github.com/szymonh/SWDscan
-- Yusufss4 (https://gist.github.com/amullins83/24b5ef48657c08c4005a8fab837b7499?permalink_comment_id=4554839#gistcomment-4554839)
-- Arm Debug Interface Architecture Specification (debug_interface_v5_2_architecture_specification_IHI0031F.pdf)
+## References & Acknowledgments
+- **JTAGulator Features:**
+  - [JTAGulator Project](https://github.com/grandideastudio/jtagulator)
+  - [SWD for ARM: Alternative to JTAG](https://research.kudelskisecurity.com/2019/05/16/swd-arms-alternative-to-jtag/)
+  - [PicoReg: A JTAGulator Tool for RP2040](https://github.com/jbentham/picoreg)
+  - [SWDscan by Szymon H](https://github.com/szymonh/SWDscan)
+  - [Yusufss4's Work on SWD](https://gist.github.com/amullins83/24b5ef48657c08c4005a8fab837b7499?permalink_comment_id=4554839#gistcomment-4554839)
+  - [ARM Debug Interface Architecture Specification](https://www.arm.com/architecture-debug-interface)
         
- Flashrom support :
-- https://www.flashrom.org/supported_hw/supported_prog/serprog/serprog-protocol.html
-- https://github.com/stacksmashing/pico-serprog
+- **Flashrom Support:**
+  - [Flashrom Supported Hardware](https://www.flashrom.org/supported_hw/supported_prog/serprog/serprog-protocol.html)
+  - [Pico-serprog: Flash Programming via RP2040](https://github.com/stacksmashing/pico-serprog)
 
- Openocd support  : 
-- http://dangerousprototypes.com/blog/2009/10/09/bus-pirate-raw-bitbang-mode/
-- http://dangerousprototypes.com/blog/2009/10/27/binary-raw-wire-mode/
-- https://github.com/grandideastudio/jtagulator/blob/master/PropOCD.spin
-- https://github.com/DangerousPrototypes/Bus_Pirate/blob/master/Firmware/binIO.c
+- **OpenOCD Support:**
+  - [BusPirate Raw Bitbang Mode](http://dangerousprototypes.com/blog/2009/10/09/bus-pirate-raw-bitbang-mode/)
+  - [Binary Raw Wire Mode with BusPirate](http://dangerousprototypes.com/blog/2009/10/27/binary-raw-wire-mode/)
+  - [JTAGulator for OpenOCD](https://github.com/grandideastudio/jtagulator/blob/master/PropOCD.spin)
+  - [BusPirate Firmware for Binary I/O](https://github.com/DangerousPrototypes/Bus_Pirate/blob/master/Firmware/binIO.c)
 
- USB-to-Serial support :
-- https://github.com/xxxajk/pico-uart-bridge
-- https://github.com/Noltari/pico-uart-bridge
+- **USB-to-Serial Support:**
+  - [Pico UART Bridge](https://github.com/xxxajk/pico-uart-bridge)
+  - [Noltari's Pico UART Bridge](https://github.com/Noltari/pico-uart-bridge)
 
- CMSIS-DAP support :
-- https://github.com/majbthrd/DapperMime
-- https://github.com/raspberrypi/debugprobe
+- **CMSIS-DAP Support:**
+  - [DapperMime: CMSIS-DAP Debugging Tool](https://github.com/majbthrd/DapperMime)
+  - [Raspberry Pi Debug Probe](https://github.com/raspberrypi/debugprobe)
 
-## License details
-TinyUSB is licensed under the MIT license. \
-ARM's CMSIS_5 code is licensed under the Apache 2.0 license. \
-Source code files within this project are licensed under the MIT license unless otherwise stated.
+## License
+- TinyUSB: MIT License  
+- ARM CMSIS_5: Apache 2.0 License  
+- Project Code: MIT License (unless otherwise stated)
