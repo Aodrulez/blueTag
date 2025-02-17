@@ -1161,18 +1161,18 @@ void hardwareModeBoot(void)
     gpio_set_pulls (hwBootCmsisdapPin, true, false);
 
     sleep_ms(50);
-    if (gpio_get(hwBootUSB2SerialPin) == false)
+    if (gpio_is_pulled_down(hwBootUSB2SerialPin))
     {
         stdio_set_driver_enabled(&stdio_usb, false);
         sleep_ms(50);
         usbMode = USB_MODE_DEFAULT;
         uartMode();
     }
-    else if (gpio_get(hwBootFlashromPin) == false)
+    else if (gpio_is_pulled_down(hwBootFlashromPin))
     {
         initSerProg();
     }
-    else if (gpio_get(hwBootOpenocdPin) == false)
+    else if (gpio_is_pulled_down(hwBootOpenocdPin))
     {
         jTCK = OPENOCD_PIN_DEFAULT;
         jTMS = OPENOCD_PIN_DEFAULT;
@@ -1182,7 +1182,7 @@ void hardwareModeBoot(void)
         xSwdIO = OPENOCD_PIN_DEFAULT;
         initOpenocdMode(jTCK, jTMS, jTDI, jTDO, xSwdClk, xSwdIO, OPENOCD_MODE_GENERIC);
     }
-    else if (gpio_get(hwBootCmsisdapPin) == false)
+    else if (gpio_is_pulled_down(hwBootCmsisdapPin))
     {
         usbMode = USB_MODE_CMSISDAP;
         stdio_set_driver_enabled(&stdio_usb, false);
