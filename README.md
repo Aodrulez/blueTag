@@ -4,6 +4,13 @@ JTAGulator alternative & a hardware hacker's multi-tool for RP2040 microcontroll
 
 ![](images/bluetag-v2.0.png?raw=true "blueTag v2.0.0 Interface")
 
+## Features  
+- Detects JTAG & SWD debug pinout (JTAGulator function)  
+- Works as a USB-to-Serial adapter  
+- Reads & writes flash ICs supported by Flashrom  
+- Acts as a BusPirate-based adapter for OpenOCD (supports JTAG & SWD modes)  
+- Functions as a CMSIS-DAP adapter (supports UART & SWD interface)
+
 ## Pinout
 ![](images/BlueTagPinout.png?raw=true "blueTag Pinout")
 
