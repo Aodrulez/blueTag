@@ -15,7 +15,7 @@ JTAGulator alternative & a hardware hacker's multi-tool for RP2040 microcontroll
 ![](images/BlueTagPinout.png?raw=true "blueTag Pinout")
 
 ## Installation
-- Download latest release version of blueTag ("blueTag-vX.X.X.uf2") from this github repository's release section
+- Download latest release version of blueTag ("blueTag-vX.X.X.uf2") from this github repository's [releases](https://github.com/Aodrulez/blueTag/releases) section
 - Press & hold 'BOOTSEL' button on a RP2040 microcontroller based development board, connect it to a computer via USB cable & then release the button
 - Copy "blueTag-vX.X.X.uf2" file onto the newly detected flash drive (RPI-RP2*) on your computer
 
