@@ -1139,6 +1139,22 @@ void resetUART(void)
     tud_connect();
 }
 
+void enableBootModePulls(void)
+{
+    // Set pull-ups to avoid false positives
+    gpio_pull_up (hwBootUSB2SerialPin);
+    gpio_pull_up (hwBootFlashromPin);
+    gpio_pull_up (hwBootOpenocdPin);
+    gpio_pull_up (hwBootCmsisdapPin);
+}
+
+void disableBootModePulls(void)
+{
+    gpio_disable_pulls(hwBootUSB2SerialPin);
+    gpio_disable_pulls(hwBootFlashromPin);
+    gpio_disable_pulls(hwBootOpenocdPin);        
+    gpio_disable_pulls(hwBootCmsisdapPin);
+}
 
 void hardwareModeBoot(void)
 {
@@ -1154,15 +1170,10 @@ void hardwareModeBoot(void)
     gpio_set_dir(hwBootOpenocdPin, GPIO_IN);
     gpio_set_dir(hwBootCmsisdapPin, GPIO_IN);
 
-    // Set pull-ups to avoid false positives
-    gpio_set_pulls (hwBootUSB2SerialPin, true, false);
-    gpio_set_pulls (hwBootFlashromPin, true, false);
-    gpio_set_pulls (hwBootOpenocdPin, true, false);
-    gpio_set_pulls (hwBootCmsisdapPin, true, false);
-
-    sleep_ms(50);
+    sleep_us(50);
     if (gpio_is_pulled_down(hwBootUSB2SerialPin))
     {
+        disableBootModePulls();
         stdio_set_driver_enabled(&stdio_usb, false);
         sleep_ms(50);
         usbMode = USB_MODE_DEFAULT;
@@ -1170,10 +1181,12 @@ void hardwareModeBoot(void)
     }
     else if (gpio_is_pulled_down(hwBootFlashromPin))
     {
+        disableBootModePulls();
         initSerProg();
     }
     else if (gpio_is_pulled_down(hwBootOpenocdPin))
     {
+        disableBootModePulls();
         jTCK = OPENOCD_PIN_DEFAULT;
         jTMS = OPENOCD_PIN_DEFAULT;
         jTDI = OPENOCD_PIN_DEFAULT;
@@ -1184,6 +1197,7 @@ void hardwareModeBoot(void)
     }
     else if (gpio_is_pulled_down(hwBootCmsisdapPin))
     {
+        disableBootModePulls();
         usbMode = USB_MODE_CMSISDAP;
         stdio_set_driver_enabled(&stdio_usb, false);
         tud_disconnect();
