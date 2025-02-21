@@ -11,18 +11,6 @@ Features:
 
 Others:
  - Removed Flashrom's programmer mode from boot mode
-
-## 1.0.2 (2024-11-11)
-
-Fixes:
-
- - None
- 
-Features:
- - Updated default available channels from 9 to 16 
-
-Others:
- - Updated description of the project with an image describing the pinout information
    
 ## 2.0.0 (2025-02-16)
 
