@@ -3,4 +3,5 @@
 
 extern int initUART(void);
 extern void uartMode(void);
+extern void uartBootMode(void);
 #endif

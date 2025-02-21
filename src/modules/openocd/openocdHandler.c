@@ -145,7 +145,6 @@ void openocdModeProcessCommands(void)
     while (1) 
     {
         command = getc(stdin);
-        gpio_put(PIN_LED, 0);
 
         if (command == 0x0a)
         {            
@@ -207,8 +206,7 @@ void openocdModeProcessCommands(void)
         { 
             putchar(binBBpinset(command)); 
         }
-
-        gpio_put(PIN_LED, 0);       
+     
     }
 }
 

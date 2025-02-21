@@ -26,6 +26,8 @@
 #ifndef _TUSB_CONFIG_H_
 #define _TUSB_CONFIG_H_
 
+#include <tusb_option.h>
+
 #ifdef __cplusplus
  extern "C" {
 #endif
@@ -34,23 +36,10 @@
 // COMMON CONFIGURATION
 //--------------------------------------------------------------------
 
-#ifndef CFG_TUSB_MCU
-  #error CFG_TUSB_MCU must be defined
-#endif
+
 
 #define CFG_TUSB_RHPORT0_MODE     OPT_MODE_DEVICE
 
-#ifndef CFG_TUSB_OS
-#define CFG_TUSB_OS                 OPT_OS_PICO
-#endif
-
-#ifndef CFG_TUSB_MEM_SECTION
-#define CFG_TUSB_MEM_SECTION
-#endif
-
-#ifndef CFG_TUSB_MEM_ALIGN
-#define CFG_TUSB_MEM_ALIGN          __attribute__ ((aligned(4)))
-#endif
 
 //--------------------------------------------------------------------
 // DEVICE CONFIGURATION
@@ -61,23 +50,14 @@
 #endif
 
 //------------- CLASS -------------//
-#define CFG_TUD_HID             1
 #define CFG_TUD_CDC             1
-#define CFG_TUD_MSC             0
-#define CFG_TUD_MIDI            0
-#define CFG_TUD_VENDOR          0
+#define CFG_TUD_HID             1
 
-#define CFG_TUD_CDC_RX_BUFSIZE 128
+
+#define CFG_TUD_CDC_RX_BUFSIZE 1024
 #define CFG_TUD_CDC_TX_BUFSIZE 4096
 
-#define CFG_TUD_VENDOR_RX_BUFSIZE 8192
-#define CFG_TUD_VENDOR_TX_BUFSIZE 8192
 
-#ifndef TUD_OPT_RP2040_USB_DEVICE_UFRAME_FIX
-#define TUD_OPT_RP2040_USB_DEVICE_UFRAME_FIX 1
-#endif
-
-void usbd_serial_init(void);
 void cdc_uart_init(void);
 void cdc_task(void);
 int cmsisDapInit(void);

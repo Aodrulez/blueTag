@@ -177,9 +177,7 @@ int initSerProg(void)
     while(1) 
     {
         int command = getc(stdin);
-        gpio_put(PIN_LED, 1);
         processCommands(command);
-        gpio_put(PIN_LED, 0);
     }
 
     return 0;

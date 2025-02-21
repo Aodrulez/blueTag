@@ -31,6 +31,7 @@
 */
 
 #include "stdio.h"
+#include "hardware/clocks.h"
 #include "pico/stdlib.h"
 #include "pico/stdio/driver.h"
 #include "pico/multicore.h"
@@ -73,9 +74,8 @@ char *version="2.0.0";
 
 // Hardware boot mode pins
 #define hwBootUSB2SerialPin  26
-#define hwBootFlashromPin    27
-#define hwBootOpenocdPin     28
-#define hwBootCmsisdapPin    29
+#define hwBootOpenocdPin     27
+#define hwBootCmsisdapPin    28
 
 bool isChannelSafe[maxChannels];
 volatile int usbMode    = USB_MODE_DEFAULT;
@@ -153,9 +153,8 @@ void showMenu(void)
     printf("     | RP2040 pin config   | Mode                         |%s", EOL);
     printf("     +----------------------------------------------------+%s", EOL);             
     printf("     | GPIO 26 -> GND      | USB-to-Serial                |%s", EOL);
-    printf("     | GPIO 27 -> GND      | Flashrom's serial programmer |%s", EOL);
-    printf("     | GPIO 28 -> GND      | Openocd JTAG/SWD debugger    |%s", EOL);
-    printf("     | GPIO 29 -> GND      | CMSIS-DAP v1.0 debugger      |%s", EOL);          
+    printf("     | GPIO 27 -> GND      | Openocd JTAG/SWD debugger    |%s", EOL);
+    printf("     | GPIO 28 -> GND      | CMSIS-DAP v1.0 debugger      |%s", EOL);
     printf("     +----------------------------------------------------+%s%s", EOL, EOL);
 
     printf(BOLD);
@@ -1143,17 +1142,15 @@ void enableBootModePulls(void)
 {
     // Set pull-ups to avoid false positives
     gpio_set_pulls (hwBootUSB2SerialPin, true, false);
-    gpio_set_pulls (hwBootFlashromPin, true, false);
     gpio_set_pulls (hwBootOpenocdPin, true, false);
     gpio_set_pulls (hwBootCmsisdapPin, true, false);
 }
 
 void disableBootModePulls(void)
 {
-    gpio_disable_pulls(hwBootUSB2SerialPin);
-    gpio_disable_pulls(hwBootFlashromPin);
-    gpio_disable_pulls(hwBootOpenocdPin);        
     gpio_disable_pulls(hwBootCmsisdapPin);
+    gpio_disable_pulls(hwBootUSB2SerialPin);
+    gpio_disable_pulls(hwBootOpenocdPin);        
 }
 
 
@@ -1161,13 +1158,11 @@ void hardwareModeBoot(void)
 {
     // Init hardware boot mode pins
     gpio_init(hwBootUSB2SerialPin);
-    gpio_init(hwBootFlashromPin);
     gpio_init(hwBootOpenocdPin);
     gpio_init(hwBootCmsisdapPin);    
 
     // Setup hardware boot mode pins
     gpio_set_dir(hwBootUSB2SerialPin, GPIO_IN);
-    gpio_set_dir(hwBootFlashromPin, GPIO_IN);
     gpio_set_dir(hwBootOpenocdPin, GPIO_IN);
     gpio_set_dir(hwBootCmsisdapPin, GPIO_IN);
 
@@ -1178,46 +1173,36 @@ void hardwareModeBoot(void)
     {
         disableBootModePulls();
         usbMode = USB_MODE_CMSISDAP;
-        stdio_set_driver_enabled(&stdio_usb, false);
-        tud_disconnect();
-        busyLoop(USB_HOST_RECOGNISE_TIME);
-        busyLoop(USB_HOST_RECOGNISE_TIME);
-        busyLoop(USB_HOST_RECOGNISE_TIME);
-        busyLoop(USB_HOST_RECOGNISE_TIME);        
-        multicore_reset_core1(); 
-        busyLoop(USB_HOST_RECOGNISE_TIME);  // Oddly more reliable than busyLoop(USB_HOST_RECOGNISE_TIME * 4)
-        busyLoop(USB_HOST_RECOGNISE_TIME);
-        busyLoop(USB_HOST_RECOGNISE_TIME);
-        busyLoop(USB_HOST_RECOGNISE_TIME);
         cmsisDapInit();
     }
-    else if (gpio_get(hwBootUSB2SerialPin) == false)
+    else 
     {
-        disableBootModePulls();
-        stdio_set_driver_enabled(&stdio_usb, false);
-        sleep_ms(50);
         usbMode = USB_MODE_DEFAULT;
-        uartMode();
-    }
-    else if (gpio_get(hwBootFlashromPin) == false)
-    {
-        disableBootModePulls();
-        initSerProg();
-    }
-    else if (gpio_get(hwBootOpenocdPin) == false)
-    {
-        disableBootModePulls();
-        jTCK = OPENOCD_PIN_DEFAULT;
-        jTMS = OPENOCD_PIN_DEFAULT;
-        jTDI = OPENOCD_PIN_DEFAULT;
-        jTDO = OPENOCD_PIN_DEFAULT;
-        xSwdClk = OPENOCD_PIN_DEFAULT;
-        xSwdIO = OPENOCD_PIN_DEFAULT;
-        initOpenocdMode(jTCK, jTMS, jTDI, jTDO, xSwdClk, xSwdIO, OPENOCD_MODE_GENERIC);
-    }
-    else
-    {
-        disableBootModePulls();
+        
+        if (gpio_get(hwBootUSB2SerialPin) == false)
+        {
+            disableBootModePulls();  
+            uartBootMode();
+        }
+        else if (gpio_get(hwBootOpenocdPin) == false)
+        {
+            disableBootModePulls();            
+            initUART();
+            stdio_usb_init();       
+            jTCK = OPENOCD_PIN_DEFAULT;
+            jTMS = OPENOCD_PIN_DEFAULT;
+            jTDI = OPENOCD_PIN_DEFAULT;
+            jTDO = OPENOCD_PIN_DEFAULT;
+            xSwdClk = OPENOCD_PIN_DEFAULT;
+            xSwdIO = OPENOCD_PIN_DEFAULT;
+            initOpenocdMode(jTCK, jTMS, jTDI, jTDO, xSwdClk, xSwdIO, OPENOCD_MODE_GENERIC);
+        }
+        else
+        {
+            disableBootModePulls();
+            initUART();
+            stdio_usb_init();
+        }
     }
 }
 
@@ -1225,10 +1210,9 @@ void hardwareModeBoot(void)
 
 int main()
 {
-    initUART();
-    stdio_usb_init();
     gpio_init(onboardLED);
     gpio_set_dir(onboardLED, GPIO_OUT);
+    gpio_put(onboardLED, 1);
     initChannels();
 
     jPulsePins=false;
@@ -1312,15 +1296,12 @@ int main()
                 printf(" Connect blueTag's '3V3 Out' pin to the target UART's 'VCC' pin only if the target%s", EOL); 
                 printf("       isn't externally powered%s%s", EOL, EOL); 
 
-                printf(" Press any key to activate... %s%s", EOL, EOL);
-                char cc = getc(stdin);
-                printf(BOLD);
-                printf(" -- Activated --%s%s", EOL, EOL);
-                printf(OFF);
-
-                stdio_set_driver_enabled(&stdio_usb, false);
-                sleep_ms(500);
+                resetUART();
+                fflush(stdout);
+                busyLoop(USB_HOST_RECOGNISE_TIME);
                 usbMode = USB_MODE_DEFAULT;
+                stdio_set_driver_enabled(&stdio_usb, false);
+                stdio_usb_deinit();
                 uartMode();
                 break;
 
@@ -1417,12 +1398,13 @@ int main()
                 printf(OFF);
                 fflush(stdout);
                 busyLoop(USB_HOST_RECOGNISE_TIME);
-                usbMode = USB_MODE_CMSISDAP;
-                stdio_set_driver_enabled(&stdio_usb, false);
-                sleep_ms(50);
                 tud_disconnect();
                 multicore_reset_core1(); 
-                busyLoop(USB_HOST_RECOGNISE_TIME);
+                stdio_set_driver_enabled(&stdio_usb, false);
+                stdio_deinit_all();                
+                sleep_us(50);
+                usbMode = USB_MODE_CMSISDAP;
+                initUART();
                 cmsisDapInit();
                 break;
 

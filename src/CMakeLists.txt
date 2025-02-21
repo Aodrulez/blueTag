@@ -96,11 +96,7 @@ include_directories( ./
     modules/cmsis-dap/bsp/rp2040/
 )
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE
-  PICO_DEFAULT_UART=0
-  PICO_DEFAULT_UART_TX_PIN=16
-  PICO_DEFAULT_UART_RX_PIN=17
-)
+
 
 target_link_libraries(${PROJECT_NAME} 
     pico_stdlib
@@ -108,15 +104,11 @@ target_link_libraries(${PROJECT_NAME}
     hardware_spi
 	pico_multicore
     pico_rand
-	pico_stdlib
+    pico_stdio_usb
 	tinyusb_device
     tinyusb_board
-    pico_unique_id
 )
 
-# Enable usb output, disable uart output
-pico_enable_stdio_usb(${PROJECT_NAME} 1)
-pico_enable_stdio_uart(${PROJECT_NAME} 0)
 
 # Create map/bin/hex/uf2 files
 pico_add_extra_outputs(${PROJECT_NAME})

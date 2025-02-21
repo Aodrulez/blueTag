@@ -33,10 +33,18 @@
 
 int cmsisDapInit(void)
 {
+  bool connected = false;
   cdc_uart_init();
   DAP_Setup();
   tusb_init();
-  tud_connect();
+  connected = tud_connect();
+
+  while(connected == false)
+  {
+    connected = tud_connect();
+    sleep_us(1);
+  }
+
   while (1)
   {
     tud_task(); 

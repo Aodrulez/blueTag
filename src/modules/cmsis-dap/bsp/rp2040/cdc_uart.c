@@ -27,10 +27,17 @@
 #include "tusb.h"
 #include "picoprobe_config.h"
 
+#define USB_MODE_DEFAULT 0
+#define USB_MODE_CMSISDAP 1
+extern volatile int usbMode;
+
 void cdc_uart_init(void) {
-    gpio_set_function(PICOPROBE_UART_TX, GPIO_FUNC_UART);
-    gpio_set_function(PICOPROBE_UART_RX, GPIO_FUNC_UART);
-    uart_init(PICOPROBE_UART_INTERFACE, PICOPROBE_UART_BAUDRATE);
+if (usbMode == USB_MODE_CMSISDAP)
+    {
+        gpio_set_function(PICOPROBE_UART_TX, GPIO_FUNC_UART);
+        gpio_set_function(PICOPROBE_UART_RX, GPIO_FUNC_UART);
+        uart_init(PICOPROBE_UART_INTERFACE, PICOPROBE_UART_BAUDRATE);
+    }
 }
 
 void cdc_task(void) {
@@ -61,5 +68,8 @@ void cdc_task(void) {
 }
 
 void tud_cdc_line_coding_cb(uint8_t itf, cdc_line_coding_t const* line_coding) {
-    uart_init(PICOPROBE_UART_INTERFACE, line_coding->bit_rate);
+    if (usbMode == USB_MODE_CMSISDAP)
+    {
+        uart_init(PICOPROBE_UART_INTERFACE, line_coding->bit_rate);
+    }
 }
