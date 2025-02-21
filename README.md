@@ -2,7 +2,7 @@
     
 JTAGulator alternative & a hardware hacker's multi-tool for RP2040 microcontroller based development boards. Huge shout-out to Joe Grand for his JTAGulator project!
 
-![](images/bluetag-v2.0.png?raw=true "blueTag v2.0.0 Interface")
+![](images/bluetag-v2.1.0.png?raw=true "blueTag v2.1.0 Interface")
 
 ## Features
 - Detects JTAG & SWD debug pinout (JTAGulator function)  
