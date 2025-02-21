@@ -50,7 +50,7 @@ const char *banner=R"banner(
             |_______|_______|_______|_______| |___| |__| |__|_______|)banner";
 
 
-char *version="2.0.0";
+char *version="2.1.0";
 #define MAX_DEVICES_LEN      32                             // Maximum number of devices allowed in a single JTAG chain
 #define MIN_IR_LEN           2                              // Minimum length of instruction register per IEEE Std. 1149.1
 #define MAX_IR_LEN           32                             // Maximum length of instruction register
