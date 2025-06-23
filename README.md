@@ -44,8 +44,10 @@ git clone --recurse-submodules https://github.com/Aodrulez/blueTag.git
 cd blueTag
 docker build -t pico-builder-image .
 docker create --name pico-builder-container pico-builder-image
-docker cp pico-builder-container:/project/src/build/blueTag.uf2 ./
+docker cp pico-builder-container:/project/src/build_rp2040/blueTag.uf2 ./blueTag-RP2040.uf2
+docker cp pico-builder-container:/project/src/build_rp2350/blueTag.uf2 ./blueTag-RP2350.uf2
 ```
+> _NOTE :_ RP2350 builds are only for testing at the moment.
 
 ## References & Acknowledgments
 - **JTAGulator Features:**
