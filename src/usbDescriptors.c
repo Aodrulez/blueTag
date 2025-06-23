@@ -39,8 +39,8 @@
   
 #define DESC_STR_MAX 20
 
-#define USBD_VID 0xCAFE 
-#define USBD_PID 0xD00D 
+#define USBD_VID 0x1209 
+#define USBD_PID 0xA0D1 
 
 #define USBD_DESC_LEN (TUD_CONFIG_DESC_LEN + TUD_CDC_DESC_LEN * CFG_TUD_CDC)
 #define USBD_MAX_POWER_MA 500
