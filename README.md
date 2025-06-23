@@ -40,7 +40,7 @@ JTAGulator alternative & a hardware hacker's multi-tool for RP2040 microcontroll
 - Open a command-prompt or terminal
 - Change to the desired directory & then execute the following commands:
 ```sh
-git clone https://github.com/Aodrulez/blueTag.git
+git clone --recurse-submodules https://github.com/Aodrulez/blueTag.git
 cd blueTag
 docker build -t pico-builder-image .
 docker create --name pico-builder-container pico-builder-image
