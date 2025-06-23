@@ -28,10 +28,18 @@ COPY src/. /project/src/
 # RUN cd /project/src/modules/cmsis-dap/CMSIS_5 && git checkout 2b7495b8535bdcb306dac29b9ded4cfb679d7e5c
 
 # Build project
+# Build Pico (RP2040) project
 RUN \
-    mkdir -p /project/src/build && \
-    cd /project/src/build && \
+    mkdir -p /project/src/build_rp2040 && \
+    cd /project/src/build_rp2040 && \
     cmake .. && \
+    make
+
+# Build RP2350 project
+RUN \
+    mkdir -p /project/src/build_rp2350 && \
+    cd /project/src/build_rp2350 && \
+    cmake -DPICO_PLATFORM=rp2350 .. && \
     make
     
 # Command that will be invoked when the container starts
