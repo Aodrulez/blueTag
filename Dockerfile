@@ -23,9 +23,9 @@ ENV PICO_SDK_PATH=/project/pico-sdk/
 COPY src/. /project/src/
 
 # CMSIS-DAP git submodule
-RUN git init
-RUN git submodule add https://github.com/ARM-software/CMSIS_5.git /project/src/modules/cmsis-dap/CMSIS_5
-RUN cd /project/src/modules/cmsis-dap/CMSIS_5 && git checkout 2b7495b8535bdcb306dac29b9ded4cfb679d7e5c
+# RUN git init
+# RUN git submodule add https://github.com/ARM-software/CMSIS_5.git /project/src/modules/cmsis-dap/CMSIS_5
+# RUN cd /project/src/modules/cmsis-dap/CMSIS_5 && git checkout 2b7495b8535bdcb306dac29b9ded4cfb679d7e5c
 
 # Build project
 RUN \
