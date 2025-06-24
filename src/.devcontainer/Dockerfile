@@ -24,8 +24,9 @@ RUN apt-get update && \
         clang-format \
         python3 \
         python3-tk \
-	libjim-dev \
-	jimsh
+	    libjim-dev \
+	    jimsh \
+        udev
 
 WORKDIR /apps
 
@@ -56,5 +57,3 @@ RUN cd /apps && git clone https://github.com/raspberrypi/picotool.git --depth=1 
     && cd picotool && mkdir build && cd build && cmake ../ && make -j 8 && cp picotool /usr/local/bin
 
 RUN cd /usr/bin && ln -s /usr/bin/objdump objdump-multiarch && ln -s /usr/bin/nm nm-multiarch 
-
-RUN usermod -aG plugdev vscode

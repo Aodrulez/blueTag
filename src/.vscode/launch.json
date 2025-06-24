@@ -1,6 +1,7 @@
 {
   "version": "0.2.0",
   "configurations": [
+    
     {
       "name": "Cortex Debug",
       "cwd": "${workspaceRoot}",
@@ -10,6 +11,7 @@
       "servertype": "openocd",
       "gdbPath": "gdb-multiarch",
       "device": "RP2040",
+      "showDevDebugOutput": "raw",
       "openOCDLaunchCommands": [
         "adapter speed 5000"
       ],

@@ -3,14 +3,18 @@
     "build": {
         "dockerfile": "Dockerfile"
     },
+    "remoteUser": "root",
     "runArgs": [
         "--cap-add=SYS_PTRACE",
         "--security-opt",
         "seccomp=unconfined",
         "--privileged",
         "-v", "/dev/bus/usb:/dev/bus/usb",
-        "--device=/dev/bus/usb",
-        "--device=/dev/ttyACM0",
+        "--device=/dev/ttyS3"
+    ],
+
+    "mounts":  [
+        "source=/dev/ttyS3,target=/dev/ttyS3,type=bind",
     ],
 
     "customizations": {
@@ -23,11 +27,10 @@
         },
         "extensions": [
             "ms-vscode.cpptools",
+            "marus25.cortex-debug",
             "ms-vscode.cmake-tools",
             "eamodio.gitlens",
             "ms-vscode.cpptools-extension-pack"
         ]
-    },
-
-    "remoteUser": "vscode"
+    }
 }
