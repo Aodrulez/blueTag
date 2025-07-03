@@ -1,16 +1,13 @@
 name: Deploy new version
 
-# Only deploy when a new tag is pushed
 on:
   push:
     tags:
       - "v*.*.*"
 
-# Must match the project() name in CMakeLists.txt
 env:
   APP_NAME: blueTag
 
-# Allow this workflow to write back to the repository
 permissions:
   contents: write
 
@@ -39,8 +36,9 @@ jobs:
 
       - name: Extract current changelog entry
         run: |
-          sed -n "/## ${{ github.ref_name }}/,/^## /p" CHANGELOG.md | sed '$d' > current_changelog.md || \
-          sed -n "/## ${{ github.ref_name }}/,\$p" CHANGELOG.md > current_changelog.md
+          TAG_NAME=${GITHUB_REF_NAME#v}
+          sed -n "/## ${TAG_NAME}/,/^## /p" CHANGELOG.md | sed '$d' > current_changelog.md || \
+          sed -n "/## ${TAG_NAME}/,\$p" CHANGELOG.md > current_changelog.md
 
       - name: Push to release
         uses: softprops/action-gh-release@v1
