@@ -1,4 +1,18 @@
 # CHANGELOG.md
+
+## 2.1.1 (2025-07-03)
+
+Fixes:
+
+ - Fixed [Issue #13](https://github.com/Aodrulez/blueTag/issues/13) where GPIO0 & GPIO1 weren't working as expected in JTAGulator scan mode for SWD
+ 
+Features:
+ - None
+
+Others:
+ - Updated blueTag's USB vendor & product IDs to official values from [pid.codes](https://pid.codes/1209/A0D1/)
+ - Initial changes to implement alignment with Buspirate codebase
+   
 ## 2.1.0 (2025-02-21)
 
 Fixes:
