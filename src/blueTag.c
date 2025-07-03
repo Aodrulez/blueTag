@@ -674,21 +674,21 @@ void jtagScan(void)
     progressCount = 0;
     maxPermutations = calculateJtagPermutations(channelCount);
     jTDO, jTCK, jTMS, jTDI,jTRST = 0;
-    for(jTDI=0; jTDI<channelCount; jTDI++)
+    for(jTDI=0; jTDI <= channelCount; jTDI++)
     {
-        for(jTDO=0; jTDO < channelCount; jTDO++)
+        for(jTDO=0; jTDO <= channelCount; jTDO++)
         {
             if (jTDI == jTDO)
             {
                 continue;
             }
-            for(jTCK =0; jTCK  < channelCount; jTCK++)
+            for(jTCK =0; jTCK  <= channelCount; jTCK++)
             {
                 if (jTCK  == jTDO || jTCK == jTDI)
                 {
                     continue;
                 }
-                for(jTMS=0; jTMS < channelCount; jTMS++)
+                for(jTMS=0; jTMS <= channelCount; jTMS++)
                 {                      
                         if (jTMS == jTCK || jTMS == jTDO || jTMS == jTDI)
                         {
@@ -731,7 +731,7 @@ void jtagScan(void)
                             xTCK=jTCK;
                             xTMS=jTMS;
                             xTRST=0;
-                            for(jTRST=0; jTRST < channelCount; jTRST++)
+                            for(jTRST=0; jTRST <= channelCount; jTRST++)
                             {
                                 if (jTRST == jTMS || jTRST == jTCK || jTRST == jTDO || jTRST == jTDI)
                                 {
