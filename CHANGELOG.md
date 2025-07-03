@@ -5,6 +5,7 @@
 Fixes:
 
  - Fixed [Issue #13](https://github.com/Aodrulez/blueTag/issues/13) where GPIO0 & GPIO1 weren't working as expected in JTAGulator scan mode for SWD
+ - Fixed channel & progress-bar count mismatch for both JTAG & SWD scans
  
 Features:
  - None
