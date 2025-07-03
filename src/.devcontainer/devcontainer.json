@@ -14,7 +14,7 @@
     ],
 
     "mounts":  [
-        "source=/dev/ttyS3,target=/dev/ttyS3,type=bind",
+        "source=/dev/ttyS3,target=/dev/ttyS3,type=bind"
     ],
 
     "customizations": {

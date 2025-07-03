@@ -30,15 +30,7 @@
             https://github.com/raspberrypi/debugprobe
 */
 
-#include "stdio.h"
-#include "hardware/clocks.h"
-#include "pico/stdlib.h"
-#include "pico/stdio/driver.h"
-#include "pico/multicore.h"
-#include "tusb.h"
-#include "modules/usb2serial/uartBridge.h"
-#include "modules/flashProgrammer/serProg.h"
-#include "modules/openocd/openocdHandler.h"
+#include "blueTag.h"
 
 const char *banner=R"banner(
              _______ ___     __   __ _______ _______ _______ _______ 
@@ -60,6 +52,7 @@ char *version="2.1.0";
 #define USB_HOST_RECOGNISE_TIME   (1000 * 1000 * 5)
 #define USB_MODE_DEFAULT     0
 #define USB_MODE_CMSISDAP    1
+#define USB_MODE_UART        2
 #define CR		             13
 #define LF		             10
 #define EOL                  "\r\n"
@@ -1087,10 +1080,10 @@ void swdScan(void)
     int channelCount = getSwdChannels();
     progressCount = 0;
     maxPermutations = channelCount * (channelCount - 1);
-    for(uint clkPin=0; clkPin < channelCount; clkPin++)
+    for(uint clkPin=0; clkPin <= channelCount; clkPin++)
     {
         xSwdClk = clkPin;
-        for(uint ioPin=0; ioPin < channelCount; ioPin++)
+        for(uint ioPin=0; ioPin <= channelCount; ioPin++)
         {
             xSwdIO = ioPin;
             if( xSwdClk == xSwdIO)
@@ -1296,11 +1289,13 @@ int main()
                 printf(" Connect blueTag's '3V3 Out' pin to the target UART's 'VCC' pin only if the target%s", EOL); 
                 printf("       isn't externally powered%s%s", EOL, EOL); 
 
+                usbMode = USB_MODE_UART;
                 resetUART();
                 fflush(stdout);
                 busyLoop(USB_HOST_RECOGNISE_TIME);
-                usbMode = USB_MODE_DEFAULT;
+                usbMode = USB_MODE_UART;
                 stdio_set_driver_enabled(&stdio_usb, false);
+
                 stdio_usb_deinit();
                 uartMode();
                 break;

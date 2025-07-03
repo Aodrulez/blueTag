@@ -12,5 +12,8 @@
     "buildTarget" : {
       "visibility": "default"
                },
-     },
+    },
+    "files.associations": {
+      "stdio.h": "c"
+    },
 }

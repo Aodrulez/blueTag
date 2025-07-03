@@ -20,8 +20,8 @@
 
 #define BUFFER_SIZE 2560
 
-#define UART1_TX 0
-#define UART1_RX 1
+#define UART1_TX 16
+#define UART1_RX 17
 
 #define DEF_BIT_RATE 115200
 #define DEF_STOP_BITS 1
@@ -30,10 +30,11 @@
 
 #define USB_MODE_DEFAULT 0
 #define USB_MODE_CMSISDAP 1
+#define USB_MODE_UART 2
 extern volatile int usbMode;
 
 typedef struct {
-  uart_inst_t *const inst;
+  uart_inst_t * inst;
   uint irq;
   void *irq_fn;
   uint8_t tx_pin;
@@ -54,7 +55,7 @@ typedef struct {
 
 void uart0_irq_fn(void);
 
-const uart_id_t UART_ID[1] = {{
+uart_id_t UART_ID[1] = {{
     .inst = uart0,
     .irq = UART0_IRQ,
     .irq_fn = &uart0_irq_fn,
@@ -99,7 +100,7 @@ static inline uint stopbits_usb2uart(uint8_t stop_bits) {
 }
 
 void update_uart_cfg(uint8_t itf) {
-  const uart_id_t *ui = &UART_ID[itf];
+  uart_id_t *ui = &UART_ID[itf];
   uart_data_t *ud = &UART_DATA[itf];
 
   mutex_enter_blocking(&ud->lc_mtx);
@@ -157,7 +158,7 @@ void usb_write_bytes(uint8_t itf) {
 }
 
 void tud_cdc_send_break_cb(uint8_t itf, uint16_t duration_ms) {
-  const uart_id_t *ui = &UART_ID[itf];
+  uart_id_t *ui = &UART_ID[itf];
   uart_data_t *ud = &UART_DATA[itf];
 
   if (duration_ms == 0xffff) {
@@ -184,7 +185,7 @@ void usb_cdc_process(uint8_t itf) {
 void core1_entry(void) {
   ready = true;
 
-  if (usbMode == USB_MODE_DEFAULT) {
+  if (usbMode == USB_MODE_DEFAULT || usbMode == USB_MODE_UART ) {
     while (1) {
       tud_task();
       if (tud_ready()) {
@@ -196,7 +197,7 @@ void core1_entry(void) {
 
 static inline void uart_read_bytes(uint8_t itf) {
   uart_data_t *ud = &UART_DATA[itf];
-  const uart_id_t *ui = &UART_ID[itf];
+  uart_id_t *ui = &UART_ID[itf];
 
   if (uart_is_readable(ui->inst)) {
     mutex_enter_blocking(&ud->uart_mtx);
@@ -213,7 +214,7 @@ static inline void uart_read_bytes(uint8_t itf) {
 void uart_write_bytes(uint8_t itf) {
   uart_data_t *ud = &UART_DATA[itf];
   if (ud->usb_pos && mutex_try_enter(&ud->usb_mtx, NULL)) {
-    const uart_id_t *ui = &UART_ID[itf];
+    uart_id_t *ui = &UART_ID[itf];
     if (uart_is_writable(ui->inst)) {
       uart_putc_raw(ui->inst, ud->usb_buffer[0]);
       if (ud->usb_pos > 1) {
@@ -227,43 +228,56 @@ void uart_write_bytes(uint8_t itf) {
 
 void uart0_irq_fn(void) 
 { 
-  if (usbMode == USB_MODE_DEFAULT)
+  if (usbMode == USB_MODE_DEFAULT || usbMode == USB_MODE_UART)
   {
     uart_read_bytes(0);
   } 
 }
 
 void init_uart_data(uint8_t itf) {
-  const uart_id_t *ui = &UART_ID[itf];
   uart_data_t *ud = &UART_DATA[itf];
 
-  /* Pinmux */
-  gpio_set_function(ui->tx_pin, GPIO_FUNC_UART);
-  gpio_set_function(ui->rx_pin, GPIO_FUNC_UART);
-  gpio_pull_up(ui->rx_pin);
-
-  /* USB CDC LC */
+  // USB CDC default config
   ud->usb_lc.bit_rate = DEF_BIT_RATE;
   ud->usb_lc.data_bits = DEF_DATA_BITS;
   ud->usb_lc.parity = DEF_PARITY;
   ud->usb_lc.stop_bits = DEF_STOP_BITS;
 
-  /* UART LC */
-  ud->uart_lc.bit_rate = DEF_BIT_RATE;
-  ud->uart_lc.data_bits = DEF_DATA_BITS;
-  ud->uart_lc.parity = DEF_PARITY;
-  ud->uart_lc.stop_bits = DEF_STOP_BITS;
+  // UART LC mirrors USB
+  ud->uart_lc = ud->usb_lc;
 
-  /* Buffer */
+  // Buffers
   ud->uart_pos = 0;
   ud->usb_pos = 0;
 
-  /* Mutex */
+  // Mutexes
   mutex_init(&ud->lc_mtx);
   mutex_init(&ud->uart_mtx);
   mutex_init(&ud->usb_mtx);
+}
 
-  /* UART start */
+void reconfigure_uart_pins(uint8_t itf, int mode) {
+  uart_id_t *ui = &UART_ID[itf];
+  uart_data_t *ud = &UART_DATA[itf];
+
+  // Disable UART before reconfiguring
+  uart_deinit(ui->inst);
+
+  // Update pin numbers based on USB mode
+  if (mode == USB_MODE_DEFAULT) {
+    ui->tx_pin = 16;
+    ui->rx_pin = 17;
+  } else if (mode == USB_MODE_UART) {
+    ui->tx_pin = 0;
+    ui->rx_pin = 1;
+  }
+
+  // Configure GPIO pins
+  gpio_set_function(ui->tx_pin, GPIO_FUNC_UART);
+  gpio_set_function(ui->rx_pin, GPIO_FUNC_UART);
+  gpio_pull_up(ui->rx_pin);
+
+  // Init UART with current config
   uart_init(ui->inst, ud->usb_lc.bit_rate);
   uart_set_hw_flow(ui->inst, false, false);
   uart_set_format(ui->inst, databits_usb2uart(ud->usb_lc.data_bits),
@@ -271,15 +285,16 @@ void init_uart_data(uint8_t itf) {
                   parity_usb2uart(ud->usb_lc.parity));
   uart_set_fifo_enabled(ui->inst, false);
   uart_set_translate_crlf(ui->inst, false);
-  /* UART RX Interrupt */
+
+  // IRQ setup
   irq_set_exclusive_handler(ui->irq, ui->irq_fn);
+  irq_set_enabled(ui->irq, true);
+  uart_set_irq_enables(ui->inst, true, false);
 }
 
 void start_uarts() {
-  init_uart_data(0);
-  const uart_id_t *ui = &UART_ID[0];
-  irq_set_enabled(ui->irq, true);
-  uart_set_irq_enables(ui->inst, true, false);
+  init_uart_data(0);                    // Setup buffers and locks
+  reconfigure_uart_pins(0, usbMode);   // Actual UART + GPIO setup
 }
 
 void uartBootMode(void) {
@@ -344,7 +359,7 @@ void initUARTt(void) {
   }
 
   for (itf = 0; itf < CFG_TUD_CDC; itf++) {
-    const uart_id_t *ui = &UART_ID[itf];
+    uart_id_t *ui = &UART_ID[itf];
     irq_set_enabled(ui->irq, true);
     uart_set_irq_enables(ui->inst, true, false);
   }
