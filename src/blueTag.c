@@ -672,7 +672,7 @@ void jtagScan(void)
     jDeviceCount=0;
     channelCount = getChannels();            // First get the number of channels hooked
     progressCount = 0;
-    maxPermutations = calculateJtagPermutations(channelCount);
+    maxPermutations = calculateJtagPermutations(channelCount+1);
     jTDO, jTCK, jTMS, jTDI,jTRST = 0;
     for(jTDI=0; jTDI <= channelCount; jTDI++)
     {
@@ -1077,9 +1077,9 @@ void swdScan(void)
 {     
     swdDeviceFound = false;
     bool result = false;    
-    int channelCount = getSwdChannels();
+    int channelCount = getSwdChannels();    
     progressCount = 0;
-    maxPermutations = channelCount * (channelCount - 1);
+    maxPermutations = channelCount * (channelCount + 1);   // Needs to be fixed
     for(uint clkPin=0; clkPin <= channelCount; clkPin++)
     {
         xSwdClk = clkPin;
