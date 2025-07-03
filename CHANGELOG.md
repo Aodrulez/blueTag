@@ -1,4 +1,4 @@
-# CHANGELOG.md
+# Changelog
 
 ## 2.1.1 (2025-07-03)
 
