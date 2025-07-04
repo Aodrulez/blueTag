@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.1.2 (2025-07-03)
+
+Fixes:
+
+ - Fixed regression in USB-to-Serial hardware boot mode caused by the fix for [Issue #13](https://github.com/Aodrulez/blueTag/issues/13) 
+ 
+Features:
+ - None
+
+Others:
+ - None
+
 ## 2.1.1 (2025-07-03)
 
 Fixes:
