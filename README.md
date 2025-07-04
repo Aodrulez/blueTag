@@ -19,6 +19,8 @@ JTAGulator alternative & a hardware hacker's multi-tool for RP2040 microcontroll
 - Press & hold 'BOOTSEL' button on a RP2040 microcontroller based development board, connect it to a computer via USB cable & then release the button
 - Copy "blueTag-vX.X.X.uf2" file onto the newly detected flash drive (RPI-RP2*) on your computer
 
+> **_NOTE :_** Releases now also contain experimental builds ("blueTag-vX.X.X-RP2350-Experimental.uf2") for RP2350 based dev-boards. 
+
 ## Usage
 - Connect the RP2040 microcontroller based development board running blueTag to your computer using USB cable
 - Connect the development board's GPIO pins (GPIO0-GPIO15 so 16 channels in all) to your target's test-points
