@@ -1175,6 +1175,7 @@ void hardwareModeBoot(void)
         if (gpio_get(hwBootUSB2SerialPin) == false)
         {
             disableBootModePulls();  
+            usbMode = USB_MODE_UART;
             uartBootMode();
         }
         else if (gpio_get(hwBootOpenocdPin) == false)
