@@ -101,6 +101,7 @@ include_directories( ./
 target_link_libraries(${PROJECT_NAME} 
     pico_stdlib
     hardware_flash
+    hardware_pio
     hardware_spi
 	pico_multicore
     pico_rand

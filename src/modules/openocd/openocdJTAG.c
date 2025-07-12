@@ -151,12 +151,26 @@ void openocdModeJTAG(uint ocdJTCK,uint ocdJTMS,uint ocdJTDI,uint ocdJTDO)
                 inByte2=getc(stdin);
                 break;
 
-            case CMD_UART_SPEED:    // Unsupported for now
-				inByte=getc(stdin);
+            case CMD_UART_SPEED:    
+                buf[0] = CMD_UART_SPEED;
+                buf[1] = SERIAL_NORMAL;
+				
+                inByte=getc(stdin);
+                if (inByte == SERIAL_FAST) 
+                {
+                    buf[1] = SERIAL_FAST;
+                } else 
+                {
+                    buf[1] = SERIAL_NORMAL;
+                }
+
 				inByte=getc(stdin);
 				inByte2=getc(stdin);
-				buf[0] = CMD_UART_SPEED;
-				buf[1] = SERIAL_NORMAL;
+                if ((inByte != 0xAA) || (inByte2 != 0x55)) 
+                {
+                    buf[1] = SERIAL_NORMAL;
+                }
+				
 				openocdModeJTAGAnswer(buf, 2);
 				break;
 
